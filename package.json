@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "dev": "node ace serve --watch",
-    "build": "node ace build --production",
+    "build": "yarn install --production=false && node ace build --production",
     "start": "node server.js",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write ."
