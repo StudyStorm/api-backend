@@ -5,9 +5,9 @@
  * file.
  */
 
-import '@japa/runner'
+import "@japa/runner";
 
-declare module '@japa/runner' {
+declare module "@japa/runner" {
   interface TestContext {
     // Extend context
   }
