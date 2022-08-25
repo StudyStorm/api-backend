@@ -18,21 +18,21 @@
 |
 */
 
-import Route from '@ioc:Adonis/Core/Route'
-import Env from '@ioc:Adonis/Core/Env'
-import Drive from '@ioc:Adonis/Core/Drive'
+import Route from "@ioc:Adonis/Core/Route";
+import Env from "@ioc:Adonis/Core/Env";
+import Drive from "@ioc:Adonis/Core/Drive";
 
-Route.get('/', async () => {
-  return { hello: Env.get('NODE_ENV') }
-})
+Route.get("/", async () => {
+  return { hello: Env.get("NODE_ENV") };
+});
 
-Route.get('/put', async () => {
-  return Drive.put('test/my/file.txt', 'hello world', {
-    contentType: 'text/plain',
-  })
-})
+Route.get("/put", async () => {
+  return Drive.put("test/my/file.txt", "hello world", {
+    contentType: "text/plain",
+  });
+});
 
-Route.get('/get', async ({ response }) => {
-  const readableStream = await Drive.getStream('test/my/file.txt')
-  response.stream(readableStream)
-})
+Route.get("/get", async ({ response }) => {
+  const readableStream = await Drive.getStream("test/my/file.txt");
+  response.stream(readableStream);
+});
