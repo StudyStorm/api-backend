@@ -1,9 +1,9 @@
 name: Unit tests
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, dev]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev]
 jobs:
   test:
     timeout-minutes: 60
@@ -16,4 +16,4 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Run tests
-        run: node ace test
+        run: yarn test
