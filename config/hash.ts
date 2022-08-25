@@ -5,8 +5,8 @@
  * file.
  */
 
-import Env from '@ioc:Adonis/Core/Env'
-import { hashConfig } from '@adonisjs/core/build/config'
+import Env from "@ioc:Adonis/Core/Env";
+import { hashConfig } from "@adonisjs/core/build/config";
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +27,7 @@ export default hashConfig({
   | free to change the default value
   |
   */
-  default: Env.get('HASH_DRIVER', 'argon'),
+  default: Env.get("HASH_DRIVER", "argon"),
 
   list: {
     /*
@@ -44,8 +44,8 @@ export default hashConfig({
     |
     */
     argon: {
-      driver: 'argon2',
-      variant: 'id',
+      driver: "argon2",
+      variant: "id",
       iterations: 3,
       memory: 4096,
       parallelism: 1,
@@ -66,8 +66,8 @@ export default hashConfig({
     |
     */
     bcrypt: {
-      driver: 'bcrypt',
+      driver: "bcrypt",
       rounds: 10,
     },
   },
-})
+});

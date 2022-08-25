@@ -5,7 +5,7 @@
  * file.
  */
 
-declare module '@ioc:Adonis/Core/Env' {
+declare module "@ioc:Adonis/Core/Env" {
   /*
   |--------------------------------------------------------------------------
   | Getting types for validated environment variables
@@ -18,6 +18,6 @@ declare module '@ioc:Adonis/Core/Env' {
   |
   */
 
-  type CustomTypes = typeof import('../env').default
+  type CustomTypes = typeof import("../env").default;
   interface EnvTypes extends CustomTypes {}
 }

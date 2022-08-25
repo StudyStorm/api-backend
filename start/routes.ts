@@ -18,9 +18,9 @@
 |
 */
 
-import Route from '@ioc:Adonis/Core/Route'
-import Env from '@ioc:Adonis/Core/Env'
+import Route from "@ioc:Adonis/Core/Route";
+import Env from "@ioc:Adonis/Core/Env";
 
-Route.get('/', async () => {
-  return { hello: Env.get('NODE_ENV') }
-})
+Route.get("/", async () => {
+  return { hello: Env.get("NODE_ENV") };
+});
