@@ -1,4 +1,4 @@
-name: "[Backend] Unit & Component tests"
+name: "[Backend] Build + Unit & Component tests"
 on:
   push:
     branches: [main, master, dev]
@@ -15,5 +15,7 @@ jobs:
           node-version: "16.x"
       - name: Install dependencies
         run: yarn install
+      - name: Build output
+        run: yarn build
       - name: Run tests
         run: yarn test
