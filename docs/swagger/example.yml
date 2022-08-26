@@ -1,0 +1,21 @@
+/api/auth/login:
+  post:
+    tags:
+      - Example
+    security: []
+    description: Login
+    parameters:
+      - name: credentials
+        in:  body
+        required: true
+        schema:
+          properties:
+            phone:
+              type: string
+              example: '1234567890'
+              required: true
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
