@@ -25,7 +25,10 @@ Route.get("/", async () => {
   return { hello: Env.get("NODE_ENV") };
 });
 
-Route.post("/login", "AuthController.login");
+Route.group(() => {
+  Route.post("/login", "AuthController.login");
+  Route.post("/register", "AuthController.register");
+}).prefix("api/v1");
 
 Route.get("/dashboard", async ({ auth }) => {
   await auth.use("web").authenticate();
