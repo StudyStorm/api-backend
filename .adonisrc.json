@@ -24,7 +24,9 @@
     "@adonisjs/core",
     "@adonisjs/lucid",
     "adonis5-swagger",
-    "@adonisjs/mail"
+    "@adonisjs/mail",
+    "@adonisjs/auth",
+    "@adonisjs/session"
   ],
   "aceProviders": [
     "@adonisjs/repl"

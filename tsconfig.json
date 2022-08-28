@@ -31,8 +31,10 @@
       "@japa/preset-adonis/build/adonis-typings",
       "@adonisjs/lucid",
       "@adonisjs/drive-s3",
-      "adonis5-swagger"
-      "@adonisjs/mail"
+      "adonis5-swagger",
+      "@adonisjs/mail",
+      "@adonisjs/auth",
+      "@adonisjs/session"
     ]
   }
 }
