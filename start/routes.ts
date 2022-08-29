@@ -30,6 +30,13 @@ Route.group(() => {
   Route.post("/logout", "AuthController.logout").as("logout");
   Route.post("/register", "AuthController.register").as("register");
   Route.get("/verify/:userId", "AuthController.verifyEmail").as("verifyEmail");
+
+  Route.post("/forgot-password", "AuthController.forgotPassword").as(
+    "forgotPassword"
+  );
+  Route.get("/reset-password/:userId", "AuthController.resetPassword").as(
+    "resetPassword"
+  );
 }).prefix("api/v1");
 
 Route.get("/dashboard", async ({ auth }) => {
