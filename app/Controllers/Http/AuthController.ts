@@ -17,7 +17,7 @@ export default class AuthController {
 
     try {
       await auth.use("web").attempt(email, password);
-      response.send({
+      response.created({
         message: "User successfully logged in",
       });
     } catch {
@@ -59,12 +59,12 @@ export default class AuthController {
 
   public async verifyEmail({ request, response, params }: HttpContextContract) {
     if (!request.hasValidSignature()) {
-      return response.badRequest("Invalid signature");
+      return response.badRequest({ message: "Invalid signature" });
     }
     const user = await User.findOrFail(params.userId);
 
     if (user.isEmailVerified) {
-      return response.badRequest("Email already verified");
+      return response.badRequest({ message: "Email already verified" });
     }
     return user.merge({ isEmailVerified: true }).save();
   }
