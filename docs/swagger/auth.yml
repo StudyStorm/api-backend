@@ -1,4 +1,4 @@
-/api/v1/login:
+/v1/login:
   post:
     tags:
       - Authentication
@@ -19,7 +19,7 @@
     responses:
       200:
         description: Success
-/api/v1/logout:
+/v1/logout:
   post:
     tags:
       - Authentication
@@ -30,7 +30,7 @@
     responses:
       200:
         description: Success
-/api/v1/register:
+/v1/register:
   post:
     tags:
       - Authentication
