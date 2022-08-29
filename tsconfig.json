@@ -34,7 +34,8 @@
       "adonis5-swagger",
       "@adonisjs/mail",
       "@adonisjs/auth",
-      "@adonisjs/session"
+      "@adonisjs/session",
+      "@adonisjs/view"
     ]
   }
 }

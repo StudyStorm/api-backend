@@ -26,8 +26,9 @@ Route.get("/", async () => {
 });
 
 Route.group(() => {
-  Route.post("/login", "AuthController.login");
-  Route.post("/register", "AuthController.register");
+  Route.post("/login", "AuthController.login").as("login");
+  Route.post("/register", "AuthController.register").as("register");
+  Route.get("/verify/:userId", "AuthController.verifyEmail").as("verifyEmail");
 }).prefix("api/v1");
 
 Route.get("/dashboard", async ({ auth }) => {
