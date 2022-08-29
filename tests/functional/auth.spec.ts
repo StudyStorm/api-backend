@@ -2,6 +2,7 @@ import { test } from "@japa/runner";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import User from "App/Models/User";
 import Database from "@ioc:Adonis/Lucid/Database";
+import Encryption from "@ioc:Adonis/Core/Encryption";
 import Route from "@ioc:Adonis/Core/Route";
 
 test.group("Auth", (group) => {
@@ -12,7 +13,7 @@ test.group("Auth", (group) => {
   test("mail sent when registering user", async ({ assert, client }) => {
     const mailer = Mail.fake();
 
-    await client.post("api/v1/register").json({
+    await client.post("v1/register").json({
       email: "test@studystorm.net",
       password: "test123",
       firstName: "Test",
@@ -39,7 +40,7 @@ test.group("Auth", (group) => {
 
     assert.exists(user);
 
-    const response = await client.post("api/v1/login").json({
+    const response = await client.post("v1/login").json({
       email: "test@studystorm.net",
       password: "test123",
     });
@@ -61,10 +62,13 @@ test.group("Auth", (group) => {
       lastName: "User",
     });
 
-    const verifyEmailUrl = Route.makeSignedUrl("verifyEmail", {
-      userId: user.id,
-    });
-
+    const verifyEmailUrl = Route.makeUrl(
+      "verifyEmail",
+      {},
+      {
+        qs: { key: Encryption.encrypt(user.id, "24 hours") },
+      }
+    );
     assert.exists(user);
 
     const response = await client.get(verifyEmailUrl);
@@ -87,9 +91,13 @@ test.group("Auth", (group) => {
       isEmailVerified: true,
     });
 
-    const verifyEmailUrl = Route.makeSignedUrl("verifyEmail", {
-      userId: user.id,
-    });
+    const verifyEmailUrl = Route.makeUrl(
+      "verifyEmail",
+      {},
+      {
+        qs: { key: Encryption.encrypt(user.id, "24 hours") },
+      }
+    );
 
     assert.exists(user);
 

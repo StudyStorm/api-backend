@@ -5,6 +5,7 @@ import Route from "@ioc:Adonis/Core/Route";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
+import Encryption from "@ioc:Adonis/Core/Encryption";
 
 export default class AuthController {
   public async login({ request, response, auth }: HttpContextContract) {
@@ -34,15 +35,14 @@ export default class AuthController {
     const payload = await request.validate({ schema: UserRegistrationSchema });
     const user = await User.create(payload);
 
-    //generate a signed url for the user to verify their email
-    const verifyEmailUrl = Route.makeSignedUrl(
+    const key = Encryption.encrypt(user.id, "24 hours");
+
+    const verifyEmailUrl = Route.makeUrl(
       "verifyEmail",
+      {},
       {
-        userId: user.id,
-      },
-      {
+        qs: { key },
         prefixUrl: Env.get("APP_URL"),
-        expiresIn: "1 day",
       }
     );
 
@@ -62,11 +62,12 @@ export default class AuthController {
     };
   }
 
-  public async verifyEmail({ request, response, params }: HttpContextContract) {
-    if (!request.hasValidSignature()) {
-      return response.badRequest({ message: "Invalid signature" });
+  public async verifyEmail({ request, response }: HttpContextContract) {
+    const userId = Encryption.decrypt(request.input("key", ""));
+    if (!userId) {
+      return response.badRequest({ message: "Invalid key" });
     }
-    const user = await User.findOrFail(params.userId);
+    const user = await User.findOrFail(userId);
 
     if (user.isEmailVerified) {
       return response.badRequest({ message: "Email already verified" });
