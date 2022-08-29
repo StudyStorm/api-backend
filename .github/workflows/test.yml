@@ -18,6 +18,7 @@ jobs:
         ports:
           - 5432:5432
     env:
+      NODE_ENV: test
       PG_HOST: postgres
     steps:
       - uses: actions/checkout@v2
