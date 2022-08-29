@@ -19,6 +19,17 @@
     responses:
       200:
         description: Success
+/api/v1/logout:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Logout
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
 /api/v1/register:
   post:
     tags:

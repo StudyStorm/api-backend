@@ -25,6 +25,11 @@ export default class AuthController {
     }
   }
 
+  public async logout({ auth, response }: HttpContextContract) {
+    await auth.use("web").logout();
+    return response.ok({ message: "User successfully logged out" });
+  }
+
   public async register({ request }: HttpContextContract) {
     const payload = await request.validate({ schema: UserRegistrationSchema });
     const user = await User.create(payload);
