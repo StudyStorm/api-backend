@@ -1,0 +1,57 @@
+/api/v1/login:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Login
+    parameters:
+      - name: credentials
+        in:  body
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+/api/v1/logout:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Logout
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+/api/v1/register:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Register
+    parameters:
+      - name: registration
+        in:  body
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
