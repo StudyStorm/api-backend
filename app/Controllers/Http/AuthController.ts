@@ -4,6 +4,7 @@ import User from "App/Models/User";
 import Route from "@ioc:Adonis/Core/Route";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
+import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
 
 export default class AuthController {
   public async login({ request, response, auth }: HttpContextContract) {
@@ -25,17 +26,7 @@ export default class AuthController {
   }
 
   public async register({ request }: HttpContextContract) {
-    const registerSchema = schema.create({
-      email: schema.string({ trim: true }, [
-        rules.email(),
-        rules.unique({ table: "users", column: "email" }),
-      ]),
-      password: schema.string([rules.minLength(6)]),
-      firstName: schema.string({ trim: true }, [rules.capitalize()]),
-      lastName: schema.string({ trim: true }, [rules.capitalize()]),
-    });
-
-    const payload = await request.validate({ schema: registerSchema });
+    const payload = await request.validate({ schema: UserRegistrationSchema });
     const user = await User.create(payload);
 
     //generate a signed url for the user to verify their email

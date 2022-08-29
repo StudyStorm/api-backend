@@ -1,4 +1,6 @@
 import { BaseCommand } from "@adonisjs/core/build/standalone";
+import { validator } from "@ioc:Adonis/Core/Validator";
+import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
 
 export default class CreateUser extends BaseCommand {
   /**
@@ -30,11 +32,17 @@ export default class CreateUser extends BaseCommand {
   public async run() {
     const { default: User } = await import("App/Models/User");
     try {
+      const payload = await validator.validate({
+        schema: UserRegistrationSchema,
+        data: {
+          email: await this.prompt.ask("Enter email"),
+          password: await this.prompt.secure("Enter password"),
+          firstName: await this.prompt.ask("Enter first name"),
+          lastName: await this.prompt.ask("Enter last name"),
+        },
+      });
       const user = await User.create({
-        email: await this.prompt.ask("Enter email"),
-        password: await this.prompt.secure("Enter password"),
-        firstName: await this.prompt.ask("Enter first name"),
-        lastName: await this.prompt.ask("Enter last name"),
+        ...payload,
         isEmailVerified: true,
       });
       this.logger.info(`User created with id ${user.id}`);

@@ -18,12 +18,7 @@
   "preloads": [
     "./start/routes",
     "./start/kernel",
-    {
-      "file": "./start/validator",
-      "environment": [
-        "web"
-      ]
-    }
+    "./start/validator"
   ],
   "providers": [
     "./providers/AppProvider",
