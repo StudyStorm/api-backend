@@ -52,8 +52,18 @@ export default class extends BaseSeeder {
                 creatorId: faker.helpers.arrayElement(classroom.users).id,
               })
               .with("decks", faker.datatype.number(3), (deck) =>
-                // in each deck, generate 1 to 5 cards
-                deck.with("cards", faker.datatype.number(4))
+                deck
+                  .merge({
+                    creatorId: faker.helpers.arrayElement(classroom.users).id,
+                  })
+                  // in each deck, generate 1 to 5 cards
+                  .with("cards", faker.datatype.number(4))
+                  //TODO: find a way to use existing users instead of creating new ones
+                  .with("votes", faker.datatype.number(2), (user) => {
+                    user.pivotAttributes({
+                      vote: faker.helpers.arrayElement([1, -1]),
+                    });
+                  })
               )
         ).createMany(faker.datatype.number({ min: 1, max: 5 }))
       );
