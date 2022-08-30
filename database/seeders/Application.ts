@@ -34,45 +34,34 @@ export default class extends BaseSeeder {
         user.pivotAttributes({ access_right: "owner" });
       }
     ).createMany(10);
+    await Promise.all(
+      classrooms.map(async (classroom) => {
+        // load root folder
+        await classroom.load("rootFolder");
+        // generate tree folder
 
-    for (const classroom of classrooms) {
-      // load root folder
-      await classroom.load("rootFolder");
-      // generate tree folder
-
-      classroom.rootFolder.related("children").createMany(
-        // generate 1 to 5 folders in root folder with 1 to 3 subfolders
-        await generateTreeFolder(
-          FolderFactory,
-          faker.datatype.number({ min: 1, max: 3 }),
-          (folder) =>
-            // in each folder, generate 1 to 3 decks
-            folder
-              .merge({
-                creatorId: faker.helpers.arrayElement(classroom.users).id,
-              })
-              .with("decks", faker.datatype.number(3), (deck) =>
-                deck
-                  .merge({
-                    creatorId: faker.helpers.arrayElement(classroom.users).id,
-                  })
-                  // in each deck, generate 1 to 5 cards
-                  .with("cards", faker.datatype.number(4))
-                  //TODO: find a way to use existing users instead of creating new ones
-                  .with("votes", faker.datatype.number(2), (user) => {
-                    user.pivotAttributes({
-                      vote: faker.helpers.arrayElement([1, -1]),
-                    });
-                  })
-              )
-        ).createMany(faker.datatype.number({ min: 1, max: 5 }))
-      );
-    }
-
-    // Create folders with user id
-
-    // Create decks with folder id
-
-    // Create cards with deck id
+        classroom.rootFolder.related("children").createMany(
+          // generate 0 to 5 folders in root folder with 0 to 3 subfolders
+          await generateTreeFolder(
+            FolderFactory,
+            faker.datatype.number(3),
+            (folder) =>
+              // in each folder, generate 1 to 3 decks
+              folder
+                .merge({
+                  creatorId: faker.helpers.arrayElement(classroom.users).id,
+                })
+                .with("decks", faker.datatype.number(3), (deck) =>
+                  deck
+                    .merge({
+                      creatorId: faker.helpers.arrayElement(classroom.users).id,
+                    })
+                    // in each deck, generate 0 to 4 cards
+                    .with("cards", faker.datatype.number(4))
+                )
+          ).createMany(faker.datatype.number(5))
+        );
+      })
+    );
   }
 }
