@@ -27,12 +27,16 @@ export default class Card extends BaseModel {
 
   @column()
   public deckId: string;
+
   @belongsTo(() => Deck, {
     foreignKey: "deckId",
   })
   public deck: BelongsTo<typeof Deck>;
 
-  @manyToMany(() => User)
+  @manyToMany(() => User, {
+    pivotTable: "user_cards",
+    pivotColumns: ["message", "is_read"],
+  })
   public reports: ManyToMany<typeof User>;
 
   @column.dateTime({ autoCreate: true })

@@ -26,19 +26,28 @@ export default class Deck extends BaseModel {
 
   @column()
   public folderId: string;
+
+  @column()
+  public creatorId: string;
+
   @belongsTo(() => Folder, {
     foreignKey: "folderId",
   })
   public folder: BelongsTo<typeof Folder>;
 
+  @belongsTo(() => User, {
+    foreignKey: "creatorId",
+  })
+  public creator: BelongsTo<typeof User>;
+
   @hasMany(() => Card)
   public cards: HasMany<typeof Card>;
 
-  @manyToMany(() => User)
+  @manyToMany(() => User, {
+    pivotTable: "deck_users",
+    pivotColumns: ["vote"],
+  })
   public votes: ManyToMany<typeof User>;
-
-  @hasOne(() => User)
-  public creator: HasOne<typeof User>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;

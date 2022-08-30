@@ -20,7 +20,15 @@ export default class Folder extends BaseModel {
   public name: string;
 
   @column()
+  public creatorId: string;
+
+  @column()
   public parentId: string;
+
+  @belongsTo(() => User, {
+    foreignKey: "creatorId",
+  })
+  public creator: BelongsTo<typeof User>;
 
   @belongsTo(() => Folder, {
     foreignKey: "parentId",
@@ -34,13 +42,6 @@ export default class Folder extends BaseModel {
 
   @hasMany(() => Deck)
   public decks: HasMany<typeof Deck>;
-
-  @column()
-  public creatorId: string;
-  @belongsTo(() => User, {
-    foreignKey: "creatorId",
-  })
-  public creator: BelongsTo<typeof User>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
