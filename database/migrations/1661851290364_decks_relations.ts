@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.uuid("folder_id").references("folders.id");
+      table.uuid("folder_id").references("folders.id").onDelete("CASCADE");
     });
   }
 

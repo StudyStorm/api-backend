@@ -31,6 +31,9 @@ export default class Deck extends BaseModel {
   @manyToMany(() => User)
   public votes: ManyToMany<typeof User>;
 
+  @hasOne(() => User)
+  public creator: HasOne<typeof User>;
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
 

@@ -8,8 +8,8 @@ export default class extends BaseSchema {
       table.primary(["deck_id", "user_id"]);
       table.integer("vote");
 
-      table.uuid("deck_id").references("decks.id");
-      table.uuid("user_id").references("users.id");
+      table.uuid("deck_id").references("decks.id").onDelete("CASCADE");
+      table.uuid("user_id").references("users.id").onDelete("CASCADE");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

@@ -7,8 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary();
       table.string("name").notNullable();
-
-      // TODO: delete & update action
+      table.uuid("creator_id").references("users.id").onDelete("SET NULL");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

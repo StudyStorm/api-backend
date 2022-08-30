@@ -9,8 +9,8 @@ export default class extends BaseSchema {
       table.string("message");
       table.boolean("is_read").defaultTo(false);
 
-      table.uuid("card_id").references("cards.id");
-      table.uuid("user_id").references("users.id");
+      table.uuid("card_id").references("cards.id").onDelete("CASCADE");
+      table.uuid("user_id").references("users.id").onDelete("CASCADE");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
