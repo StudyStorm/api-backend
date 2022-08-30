@@ -7,6 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary();
       table.string("name").notNullable();
+      table.json("content").notNullable();
       table.uuid("deck_id").references("decks.id").onDelete("CASCADE");
 
       /**

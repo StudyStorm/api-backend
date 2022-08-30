@@ -33,7 +33,10 @@ export default class User extends BaseModel {
   @column()
   public isEmailVerified: boolean;
 
-  @manyToMany(() => Classroom)
+  @manyToMany(() => Classroom, {
+    pivotTable: "classroom_user",
+    pivotColumns: ["access_right"],
+  })
   public classrooms: ManyToMany<typeof Classroom>;
 
   @column.dateTime({ autoCreate: true })

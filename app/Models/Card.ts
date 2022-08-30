@@ -2,12 +2,15 @@ import { DateTime } from "luxon";
 import {
   BaseModel,
   beforeCreate,
+  BelongsTo,
+  belongsTo,
   column,
   ManyToMany,
   manyToMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import User from "./User";
+import Deck from "./Deck";
 
 export interface CardContent {
   question: string;
@@ -21,6 +24,9 @@ export default class Card extends BaseModel {
 
   @column()
   public content: CardContent;
+
+  @belongsTo(() => Deck)
+  public deck: BelongsTo<typeof Deck>;
 
   @manyToMany(() => User)
   public reports: ManyToMany<typeof User>;

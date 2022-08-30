@@ -10,7 +10,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.primary(["classroom_id", "user_id"]);
       table
-        .enu("accessRight", Object.values(AccessRight), {
+        .enu("access_right", Object.values(AccessRight), {
           enumName: "access_right",
           useNative: true,
           existingType: false,

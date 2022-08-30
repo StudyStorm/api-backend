@@ -5,9 +5,12 @@ import {
   beforeCreate,
   HasOne,
   hasOne,
+  manyToMany,
+  ManyToMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
+import User from "./User";
 
 export enum ClassroomVisibility {
   PUBLIC = "public",
@@ -32,6 +35,12 @@ export default class Classroom extends BaseModel {
 
   @hasOne(() => Folder)
   public rootFolder: HasOne<typeof Folder>;
+
+  @manyToMany(() => User, {
+    pivotTable: "user_classrooms",
+    pivotColumns: ["access_right"],
+  })
+  public users: ManyToMany<typeof User>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
