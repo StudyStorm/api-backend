@@ -2,6 +2,8 @@ import { DateTime } from "luxon";
 import {
   BaseModel,
   beforeCreate,
+  belongsTo,
+  BelongsTo,
   column,
   HasMany,
   hasMany,
@@ -22,8 +24,12 @@ export default class Deck extends BaseModel {
   @column()
   public name: string;
 
-  @hasOne(() => Folder)
-  public folder: HasOne<typeof Folder>;
+  @column()
+  public folderId: string;
+  @belongsTo(() => Folder, {
+    foreignKey: "folderId",
+  })
+  public folder: BelongsTo<typeof Folder>;
 
   @hasMany(() => Card)
   public cards: HasMany<typeof Card>;

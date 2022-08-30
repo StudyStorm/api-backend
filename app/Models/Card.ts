@@ -25,7 +25,11 @@ export default class Card extends BaseModel {
   @column()
   public content: CardContent;
 
-  @belongsTo(() => Deck)
+  @column()
+  public deckId: string;
+  @belongsTo(() => Deck, {
+    foreignKey: "deckId",
+  })
   public deck: BelongsTo<typeof Deck>;
 
   @manyToMany(() => User)

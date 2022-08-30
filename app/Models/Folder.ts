@@ -2,11 +2,11 @@ import { DateTime } from "luxon";
 import {
   BaseModel,
   beforeCreate,
+  belongsTo,
+  BelongsTo,
   column,
   HasMany,
   hasMany,
-  HasOne,
-  hasOne,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
@@ -19,17 +19,28 @@ export default class Folder extends BaseModel {
   @column()
   public name: string;
 
-  @hasOne(() => Folder)
-  public parent: HasOne<typeof Folder>;
+  @column()
+  public parentId: string;
 
-  @hasMany(() => Folder)
+  @belongsTo(() => Folder, {
+    foreignKey: "parentId",
+  })
+  public parent: BelongsTo<typeof Folder>;
+
+  @hasMany(() => Folder, {
+    foreignKey: "parentId",
+  })
   public children: HasMany<typeof Folder>;
 
   @hasMany(() => Deck)
   public decks: HasMany<typeof Deck>;
 
-  @hasOne(() => User)
-  public creator: HasOne<typeof User>;
+  @column()
+  public creatorId: string;
+  @belongsTo(() => User, {
+    foreignKey: "creatorId",
+  })
+  public creator: BelongsTo<typeof User>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
