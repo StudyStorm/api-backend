@@ -29,8 +29,8 @@ Route.group(() => {
   Route.post("/login", "AuthController.login").as("login");
   Route.post("/logout", "AuthController.logout").as("logout");
   Route.post("/register", "AuthController.register").as("register");
-  Route.get("/verify/:userId", "AuthController.verifyEmail").as("verifyEmail");
-}).prefix("api/v1");
+  Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
+}).prefix("v1");
 
 Route.get("/dashboard", async ({ auth }) => {
   await auth.use("web").authenticate();
