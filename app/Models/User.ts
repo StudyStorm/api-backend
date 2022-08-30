@@ -4,9 +4,12 @@ import {
   beforeCreate,
   beforeSave,
   column,
+  ManyToMany,
+  manyToMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import Hash from "@ioc:Adonis/Core/Hash";
 import { v4 as uuid } from "uuid";
+import Classroom from "./Classroom";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -25,7 +28,13 @@ export default class User extends BaseModel {
   public lastName: string;
 
   @column()
+  public profilePicture: string;
+
+  @column()
   public isEmailVerified: boolean;
+
+  @manyToMany(() => Classroom)
+  public classrooms: ManyToMany<typeof Classroom>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
