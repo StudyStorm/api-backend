@@ -19,6 +19,7 @@ export default Env.rules({
   PORT: Env.schema.number(),
   APP_KEY: Env.schema.string(),
   APP_NAME: Env.schema.string(),
+  APP_URL: Env.schema.string({ format: "url", tld: false, protocol: false }),
   DRIVE_DISK: Env.schema.enum(["local", "s3"] as const),
   NODE_ENV: Env.schema.enum(["development", "production", "test"] as const),
 
@@ -30,4 +31,6 @@ export default Env.rules({
 
   MAILGUN_API_KEY: Env.schema.string(),
   MAILGUN_DOMAIN: Env.schema.string(),
+
+  SESSION_DRIVER: Env.schema.string(),
 });

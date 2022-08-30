@@ -17,14 +17,18 @@
   },
   "preloads": [
     "./start/routes",
-    "./start/kernel"
+    "./start/kernel",
+    "./start/validator"
   ],
   "providers": [
     "./providers/AppProvider",
     "@adonisjs/core",
     "@adonisjs/lucid",
     "adonis5-swagger",
-    "@adonisjs/mail"
+    "@adonisjs/mail",
+    "@adonisjs/auth",
+    "@adonisjs/session",
+    "@adonisjs/view"
   ],
   "aceProviders": [
     "@adonisjs/repl"
@@ -37,10 +41,23 @@
           "tests/functional/**/*.spec(.ts|.js)"
         ],
         "timeout": 60000
+      },
+      {
+        "name": "unit",
+        "files": [
+          "tests/unit/**/*.spec(.ts|.js)"
+        ],
+        "timeout": 60000
       }
     ]
   },
   "testProviders": [
     "@japa/preset-adonis/TestsProvider"
+  ],
+  "metaFiles": [
+    {
+      "pattern": "resources/views/**/*.edge",
+      "reloadServer": false
+    }
   ]
 }

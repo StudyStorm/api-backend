@@ -19,20 +19,19 @@
 */
 
 import Route from "@ioc:Adonis/Core/Route";
-import Env from "@ioc:Adonis/Core/Env";
-import Drive from "@ioc:Adonis/Core/Drive";
 
 Route.get("/", async () => {
-  return { hello: Env.get("NODE_ENV") };
+  return { hello: "DEMO" };
 });
 
-Route.get("/put", async () => {
-  return Drive.put("test/my/file.txt", "hello world", {
-    contentType: "text/plain",
-  });
-});
+Route.group(() => {
+  Route.post("/login", "AuthController.login").as("login");
+  Route.post("/logout", "AuthController.logout").as("logout");
+  Route.post("/register", "AuthController.register").as("register");
+  Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
+}).prefix("v1");
 
-Route.get("/get", async ({ response }) => {
-  const readableStream = await Drive.getStream("test/my/file.txt");
-  response.stream(readableStream);
+Route.get("/dashboard", async ({ auth }) => {
+  await auth.use("web").authenticate();
+  return auth.use("web").user;
 });
