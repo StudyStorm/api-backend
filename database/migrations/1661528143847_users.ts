@@ -7,9 +7,10 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary();
       table.string("email").unique();
-      table.string("password");
-      table.string("first_name");
-      table.string("last_name");
+      table.string("password").notNullable();
+      table.string("first_name").notNullable();
+      table.string("last_name").notNullable();
+      table.string("profilePicture");
       table.boolean("is_email_verified").defaultTo(false);
       table.timestamp("created_at", { useTz: true });
       table.timestamp("updated_at", { useTz: true });

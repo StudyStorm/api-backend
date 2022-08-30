@@ -14,6 +14,12 @@ export enum ClassroomVisibility {
   PRIVATE = "private",
 }
 
+export enum AccessRight {
+  READ = "read",
+  WRITE = "write",
+  OWNER = "owner",
+}
+
 export default class Classroom extends BaseModel {
   @column({ isPrimary: true })
   public id: string;

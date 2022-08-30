@@ -1,14 +1,24 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
+import { AccessRight } from "App/Models/Classroom";
 
 export default class extends BaseSchema {
   protected tableName = "user_classrooms";
 
   public async up() {
-    this.schema.createTable(this.tableName, (table) => {
-      table.increments("id");
+    this.schema.raw('DROP TYPE IF EXISTS "access_right"');
 
-      // TODO
-      // table.string()
+    this.schema.createTable(this.tableName, (table) => {
+      table.primary(["classroom_id", "user_id"]);
+      table
+        .enu("accessRight", Object.values(AccessRight), {
+          enumName: "access_right",
+          useNative: true,
+          existingType: false,
+        })
+        .notNullable();
+
+      table.uuid("user_id").references("users.id");
+      table.uuid("classroom_id").references("classrooms.id");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
