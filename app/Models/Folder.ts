@@ -73,4 +73,38 @@ export default class Folder extends BaseModel {
       options
     );
   }
+
+  public static getDescendantFolders(id: string) {
+    return Folder.query()
+      .withRecursive("tree", (query) => {
+        query
+          .from("folders as f1")
+          .select("f1.*")
+          .where("f1.id", id)
+          .union((subquery) => {
+            subquery
+              .from("folders as f2")
+              .select("f2.*")
+              .join("tree as t", "t.parent_id", "f2.id");
+          });
+      })
+      .from("tree");
+  }
+
+  public static getAscendantFolders(id: string) {
+    return Folder.query()
+      .withRecursive("tree", (query) => {
+        query
+          .from("folders as f1")
+          .select("f1.*")
+          .where("f1.id", id)
+          .unionAll((subquery) => {
+            subquery
+              .from("folders as f2")
+              .select("f2.*")
+              .join("tree as t", "t.id", "f2.parent_id");
+          });
+      })
+      .from("tree");
+  }
 }

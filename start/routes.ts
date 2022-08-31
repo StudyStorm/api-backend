@@ -24,6 +24,9 @@ Route.get("/", async () => {
   return { hello: "DEMO" };
 });
 
+Route.get("folder/desc/:id", "FoldersController.getDescendants");
+Route.get("folder/asc/:id", "FoldersController.getAscendants");
+
 Route.group(() => {
   // Auth
   Route.group(() => {
