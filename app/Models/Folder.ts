@@ -7,10 +7,13 @@ import {
   column,
   HasMany,
   hasMany,
+  HasOne,
+  hasOne,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
 import User from "./User";
+import Classroom from "./Classroom";
 
 export default class Folder extends BaseModel {
   @column({ isPrimary: true })
@@ -25,6 +28,11 @@ export default class Folder extends BaseModel {
   @column()
   public parentId: string;
 
+  @hasOne(() => Classroom, {
+    localKey: "rootFolderId",
+  })
+  public classroom: HasOne<typeof Classroom>;
+
   @belongsTo(() => User, {
     foreignKey: "creatorId",
   })
@@ -36,11 +44,13 @@ export default class Folder extends BaseModel {
   public parent: BelongsTo<typeof Folder>;
 
   @hasMany(() => Folder, {
-    foreignKey: "parentId",
+    foreignKey: "parentId", // To verify
   })
   public children: HasMany<typeof Folder>;
 
-  @hasMany(() => Deck)
+  @hasMany(() => Deck, {
+    foreignKey: "folderId",
+  })
   public decks: HasMany<typeof Deck>;
 
   @column.dateTime({ autoCreate: true })
