@@ -2,7 +2,7 @@ import BaseSeeder from "@ioc:Adonis/Lucid/Seeder";
 import { ClassroomFactory } from "Database/factories/ClassroomFactory";
 import { FolderFactory } from "Database/factories/FolderFactory";
 import { faker } from "@faker-js/faker";
-import { AccessRight } from "App/Models/Classroom";
+import { ClassroomAccessRight } from "App/Models/Classroom";
 
 /**
  * Generate tree of folders
@@ -31,7 +31,9 @@ export default class extends BaseSeeder {
     const classrooms = await ClassroomFactory.with("rootFolder")
       .with("users", faker.datatype.number({ min: 1, max: 4 }), (user) => {
         user.pivotAttributes({
-          access_right: faker.helpers.arrayElement(Object.values(AccessRight)),
+          access_right: faker.helpers.arrayElement(
+            Object.values(ClassroomAccessRight)
+          ),
         });
       })
       .createMany(10);
