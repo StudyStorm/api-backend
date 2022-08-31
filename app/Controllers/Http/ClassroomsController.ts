@@ -1,6 +1,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Classroom, { AccessRight } from "App/Models/Classroom";
 import ClassroomCreationSchema from "App/Schemas/ClassroomCreationSchema";
+import Folder from "App/Models/Folder";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class ClassroomsController {
   public async index({ response, request }: HttpContextContract) {
@@ -21,12 +23,20 @@ export default class ClassroomsController {
   public async create({ auth, response, request }: HttpContextContract) {
     const payload = await request.validate({ schema: ClassroomCreationSchema });
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const user = auth.user!;
-    await user
-      .related("classrooms")
-      .create(payload, { access_right: AccessRight.OWNER });
-
+    await Database.transaction(async (trx) => {
+      const rootFolder = await Folder.createRoot({ client: trx });
+      await user
+        .useTransaction(trx)
+        .related("classrooms")
+        .create(
+          {
+            ...payload,
+            rootFolderId: rootFolder.id,
+          },
+          { access_right: AccessRight.OWNER }
+        );
+    });
     return response.created({ message: "Classroom created successfully" });
   }
 

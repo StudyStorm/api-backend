@@ -9,6 +9,7 @@ import {
   hasMany,
   HasOne,
   hasOne,
+  ModelAssignOptions,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
@@ -62,5 +63,14 @@ export default class Folder extends BaseModel {
   @beforeCreate()
   public static assignUuid(folder: Folder) {
     folder.id = uuid();
+  }
+
+  public static createRoot(options?: ModelAssignOptions): Promise<Folder> {
+    return this.create(
+      {
+        name: "root",
+      },
+      options
+    );
   }
 }

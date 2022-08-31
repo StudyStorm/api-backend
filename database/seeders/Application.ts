@@ -28,15 +28,13 @@ export default class extends BaseSeeder {
     // Create user
 
     // Create classroom with user id
-    const classrooms = await ClassroomFactory.with(
-      "users",
-      faker.datatype.number({ min: 1, max: 4 }),
-      (user) => {
+    const classrooms = await ClassroomFactory.with("rootFolder")
+      .with("users", faker.datatype.number({ min: 1, max: 4 }), (user) => {
         user.pivotAttributes({
           access_right: faker.helpers.arrayElement(Object.values(AccessRight)),
         });
-      }
-    ).createMany(10);
+      })
+      .createMany(10);
     await Promise.all(
       classrooms.map(async (classroom) => {
         // load root folder
