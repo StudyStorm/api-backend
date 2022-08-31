@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
-import Classroom from "App/Models/Classroom";
+import Classroom, { ClassroomVisibility } from "App/Models/Classroom";
 import User from "App/Models/User";
 
 test.group("Classrooms", async (group) => {
@@ -17,6 +17,16 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({ meta: {}, data: [] });
   });
 
+  test("receive 404 code because not authorized", async ({ client }) => {
+    const response = await client.get("v1/classrooms");
+
+    response.assertStatus(401);
+    response.dumpBody();
+    response.assertBodyContains({
+      errors: [{ message: "E_UNAUTHORIZED_ACCESS: Unauthorized access" }],
+    });
+  });
+
   test("get first page of 2 classrooms", async ({ client }) => {
     const user = await User.query().where("is_email_verified", true).first();
     const response = await client
@@ -30,7 +40,7 @@ test.group("Classrooms", async (group) => {
     });
   });
 
-  test("get no classrooms", async ({ client }) => {
+  test("receive 404 code for bad queries", async ({ client }) => {
     const user = await User.query().where("is_email_verified", true).first();
     const classrooms = await Classroom.all();
 
@@ -42,5 +52,40 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({
       message: "No classrooms found",
     });
+  });
+
+  test("successfully create a classroom", async ({ client }) => {
+    const user = await User.query().where("is_email_verified", true).first();
+    const response = await client
+      .post("v1/classrooms")
+      .json({
+        name: "Test Classroom",
+        visibility: ClassroomVisibility.PUBLIC,
+      })
+      .loginAs(user!);
+
+    response.assertStatus(201);
+    response.assertBodyContains({ message: "Classroom created successfully" });
+  });
+
+  test("receive 422 for creating a classroom because it already exists", async ({
+    client,
+  }) => {
+    await Classroom.create({
+      name: "Test Classroom",
+      visibility: ClassroomVisibility.PUBLIC,
+    });
+
+    const user = await User.query().where("is_email_verified", true).first();
+    const response = await client
+      .post("v1/classrooms")
+      .json({
+        name: "Test Classroom",
+        visibility: ClassroomVisibility.PUBLIC,
+      })
+      .loginAs(user!);
+
+    response.assertStatus(422);
+    response.assertBodyContains({ errors: [] });
   });
 });
