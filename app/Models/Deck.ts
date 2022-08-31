@@ -38,7 +38,9 @@ export default class Deck extends BaseModel {
   })
   public creator: BelongsTo<typeof User>;
 
-  @hasMany(() => Card)
+  @hasMany(() => Card, {
+    foreignKey: "deckId",
+  })
   public cards: HasMany<typeof Card>;
 
   @manyToMany(() => User, {
