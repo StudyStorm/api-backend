@@ -5,12 +5,12 @@ import {
   BelongsTo,
   belongsTo,
   column,
-  ManyToMany,
-  manyToMany,
+  HasMany,
+  hasMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
-import User from "./User";
 import Deck from "./Deck";
+import Report from "App/Models/Report";
 
 export interface CardContent {
   question: string;
@@ -33,11 +33,8 @@ export default class Card extends BaseModel {
   })
   public deck: BelongsTo<typeof Deck>;
 
-  @manyToMany(() => User, {
-    pivotTable: "user_cards",
-    pivotColumns: ["message", "is_read"],
-  })
-  public reports: ManyToMany<typeof User>;
+  @hasMany(() => Report)
+  public reports: HasMany<typeof Report>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;

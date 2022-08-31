@@ -12,9 +12,10 @@ import {
 import Hash from "@ioc:Adonis/Core/Hash";
 import { v4 as uuid } from "uuid";
 import Classroom from "./Classroom";
-import Card from "./Card";
 import Deck from "./Deck";
 import Folder from "./Folder";
+import Rating from "App/Models/Rating";
+import Report from "App/Models/Report";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -54,17 +55,11 @@ export default class User extends BaseModel {
   })
   public classrooms: ManyToMany<typeof Classroom>;
 
-  @manyToMany(() => Deck, {
-    pivotTable: "deck_users",
-    pivotColumns: ["vote"],
-  })
-  public votedDecks: ManyToMany<typeof Deck>;
+  @hasMany(() => Rating)
+  public votedDecks: HasMany<typeof Rating>;
 
-  @manyToMany(() => Card, {
-    pivotTable: "user_cards",
-    pivotColumns: ["message", "is_read"],
-  })
-  public reportedCards: ManyToMany<typeof Card>;
+  @hasMany(() => Report)
+  public reportedCards: HasMany<typeof Report>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;

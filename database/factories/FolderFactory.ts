@@ -1,9 +1,9 @@
 import Folder from "App/Models/Folder";
 import Factory from "@ioc:Adonis/Lucid/Factory";
 import { UserFactory } from "Database/factories/UserFactory";
-import DeckFactory from "Database/factories/DeckFactory";
+import { DeckFactory } from "Database/factories/DeckFactory";
 
-const FolderFactory = Factory.define(Folder, ({ faker }) => ({
+export const FolderFactory = Factory.define(Folder, ({ faker }) => ({
   name: faker.word.noun(),
 }))
   .relation("creator", () => UserFactory)

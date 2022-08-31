@@ -7,13 +7,12 @@ import {
   column,
   HasMany,
   hasMany,
-  ManyToMany,
-  manyToMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import Folder from "./Folder";
 import Card from "./Card";
 import { v4 as uuid } from "uuid";
 import User from "./User";
+import Rating from "App/Models/Rating";
 
 export default class Deck extends BaseModel {
   @column({ isPrimary: true })
@@ -41,11 +40,8 @@ export default class Deck extends BaseModel {
   @hasMany(() => Card)
   public cards: HasMany<typeof Card>;
 
-  @manyToMany(() => User, {
-    pivotTable: "deck_users",
-    pivotColumns: ["vote"],
-  })
-  public votes: ManyToMany<typeof User>;
+  @hasMany(() => Rating)
+  public ratings: HasMany<typeof Rating>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
