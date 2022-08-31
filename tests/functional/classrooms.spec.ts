@@ -21,7 +21,6 @@ test.group("Classrooms", async (group) => {
     const response = await client.get("v1/classrooms");
 
     response.assertStatus(401);
-    response.dumpBody();
     response.assertBodyContains({
       errors: [{ message: "E_UNAUTHORIZED_ACCESS: Unauthorized access" }],
     });
@@ -87,5 +86,22 @@ test.group("Classrooms", async (group) => {
 
     response.assertStatus(422);
     response.assertBodyContains({ errors: [] });
+  });
+
+  test("get a classroom by its uuid", async ({ client }) => {
+    const user = await User.query().where("is_email_verified", true).first();
+    const classroom = await Classroom.first();
+
+    const response = await client
+      .get(`v1/classrooms/${classroom!.id}`)
+      .loginAs(user!);
+
+    response.assertStatus(200);
+    response.assertBodyContains({
+      id: classroom!.id,
+      name: classroom!.name,
+      root_folder_id: classroom!.rootFolderId,
+      visibility: classroom!.visibility,
+    });
   });
 });

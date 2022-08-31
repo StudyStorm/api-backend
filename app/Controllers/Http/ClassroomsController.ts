@@ -5,6 +5,7 @@ import Folder from "App/Models/Folder";
 import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class ClassroomsController {
+  // TODO: Only the members/owners can see a list of private classroom
   public async index({ response, request }: HttpContextContract) {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);
@@ -40,13 +41,28 @@ export default class ClassroomsController {
     return response.created({ message: "Classroom created successfully" });
   }
 
-  // public async store({}: HttpContextContract) {}
-
-  // public async show({}: HttpContextContract) {}
+  // TODO: Only the members/owners can see a private classroom
+  public async show({ params }: HttpContextContract) {
+    return Classroom.findOrFail(params.id);
+  }
 
   // public async edit({}: HttpContextContract) {}
 
-  // public async update({}: HttpContextContract) {}
+  // TODO: Only the owner can modify the classroom
+  public async update({ request, params }: HttpContextContract) {
+    const payload = await request.validate({ schema: ClassroomCreationSchema });
 
-  // public async destroy({}: HttpContextContract) {}
+    const classroom = await Classroom.findOrFail(params.id);
+
+    classroom.merge(payload);
+    await classroom.save();
+    return classroom;
+  }
+
+  // TODO: Only the owner can delete the classroom
+  public async destroy({ params }: HttpContextContract) {
+    const classroom = await Classroom.findOrFail(params.id);
+    await classroom.delete();
+    return classroom;
+  }
 }
