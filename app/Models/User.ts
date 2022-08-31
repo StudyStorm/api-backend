@@ -50,7 +50,7 @@ export default class User extends BaseModel {
   public decks: HasMany<typeof Deck>;
 
   @manyToMany(() => Classroom, {
-    pivotTable: "classroom_user",
+    pivotTable: "user_classrooms",
     pivotColumns: ["access_right"],
   })
   public classrooms: ManyToMany<typeof Classroom>;

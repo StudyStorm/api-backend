@@ -31,6 +31,13 @@ Route.group(() => {
   Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
 }).prefix("v1");
 
+Route.group(() => {
+  Route.get("/classrooms", "ClassroomsController.index").as("index");
+  Route.post("/classrooms", "ClassroomsController.create").as("create");
+})
+  .prefix("v1")
+  .middleware("auth");
+
 Route.get("/dashboard", async ({ auth }) => {
   await auth.use("web").authenticate();
   return auth.use("web").user;
