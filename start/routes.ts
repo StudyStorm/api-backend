@@ -25,13 +25,26 @@ Route.get("/", async () => {
 });
 
 Route.group(() => {
-  Route.post("/login", "AuthController.login").as("login");
-  Route.post("/logout", "AuthController.logout").as("logout");
-  Route.post("/register", "AuthController.register").as("register");
-  Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
-}).prefix("v1");
+  // Auth
+  Route.group(() => {
+    Route.post("/login", "AuthController.login").as("login");
+    Route.post("/logout", "AuthController.logout").as("logout");
+    Route.post("/register", "AuthController.register").as("register");
+    Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
+  });
 
-Route.get("/dashboard", async ({ auth }) => {
-  await auth.use("web").authenticate();
-  return auth.use("web").user;
-});
+  // Classrooms
+  Route.group(() => {
+    Route.get("/classrooms", "ClassroomsController.index").as("index");
+    Route.post("/classrooms", "ClassroomsController.create").as("create");
+    Route.get("/classrooms/:id", "ClassroomsController.show")
+      .where("id", Route.matchers.uuid())
+      .as("show");
+    Route.patch("/classrooms/:id", "ClassroomsController.update")
+      .where("id", Route.matchers.uuid())
+      .as("update");
+    Route.delete("/classrooms/:id", "ClassroomsController.destroy")
+      .where("id", Route.matchers.uuid())
+      .as("destroy");
+  }).middleware("auth");
+}).prefix("v1");

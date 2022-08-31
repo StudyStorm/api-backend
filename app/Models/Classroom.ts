@@ -24,6 +24,15 @@ export enum AccessRight {
 }
 
 export default class Classroom extends BaseModel {
+  // TODO : Manage authorization with Bouncer
+
+  // public static visibleTo = scope((query, user: User) => {
+  // });
+
+  // public static modifiedBy = scope((query, user: User) => {
+
+  // }
+
   @column({ isPrimary: true })
   public id: string;
 

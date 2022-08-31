@@ -10,5 +10,3 @@ export const FolderFactory = Factory.define(Folder, ({ faker }) => ({
   .relation("decks", () => DeckFactory)
   .relation("children", () => FolderFactory)
   .build();
-
-export default FolderFactory;

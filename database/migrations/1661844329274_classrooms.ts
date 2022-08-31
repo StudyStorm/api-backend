@@ -8,7 +8,7 @@ export default class extends BaseSchema {
     this.schema.raw('DROP TYPE IF EXISTS "classroom_visibility"');
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary();
-      table.string("name").notNullable();
+      table.string("name").unique().notNullable();
       table
         .enu("visibility", Object.values(ClassroomVisibility), {
           enumName: "classroom_visibility",
