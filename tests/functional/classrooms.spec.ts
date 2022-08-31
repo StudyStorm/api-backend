@@ -104,4 +104,58 @@ test.group("Classrooms", async (group) => {
       visibility: classroom!.visibility,
     });
   });
+
+  test("successfully update a classroom", async ({ client }) => {
+    const user = await User.query().where("is_email_verified", true).first();
+
+    await client
+      .post("v1/classrooms")
+      .json({
+        name: "Test Classroom",
+        visibility: ClassroomVisibility.PUBLIC,
+      })
+      .loginAs(user!);
+
+    const classroom = await Classroom.query()
+      .where("name", "Test Classroom")
+      .first();
+
+    const response = await client
+      .patch(`v1/classrooms/${classroom!.id}`)
+      .json({
+        name: "Test Classroom Updated",
+      })
+      .loginAs(user!);
+
+    response.assertStatus(200);
+    response.assertBodyContains({
+      id: classroom!.id,
+      name: "Test Classroom Updated",
+      root_folder_id: classroom!.rootFolderId,
+      visibility: classroom!.visibility,
+    });
+  });
+
+  test("successfully delete a classroom", async ({ client }) => {
+    const user = await User.query().where("is_email_verified", true).first();
+
+    await client
+      .post("v1/classrooms")
+      .json({
+        name: "Test Classroom",
+        visibility: ClassroomVisibility.PUBLIC,
+      })
+      .loginAs(user!);
+
+    const classroom = await Classroom.query()
+      .where("name", "Test Classroom")
+      .first();
+
+    const response = await client
+      .delete(`v1/classrooms/${classroom!.id}`)
+      .loginAs(user!);
+
+    response.assertStatus(200);
+    response.assertBodyContains({ message: "Classroom deleted successfully" });
+  });
 });

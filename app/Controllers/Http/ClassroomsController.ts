@@ -3,6 +3,7 @@ import Classroom, { AccessRight } from "App/Models/Classroom";
 import ClassroomCreationSchema from "App/Schemas/ClassroomCreationSchema";
 import Folder from "App/Models/Folder";
 import Database from "@ioc:Adonis/Lucid/Database";
+import ClassroomUpdateSchema from "App/Schemas/ClassroomUpdateSchema";
 
 export default class ClassroomsController {
   // TODO: Only the members/owners can see a list of private classroom
@@ -46,11 +47,9 @@ export default class ClassroomsController {
     return Classroom.findOrFail(params.id);
   }
 
-  // public async edit({}: HttpContextContract) {}
-
   // TODO: Only the owner can modify the classroom
   public async update({ request, params }: HttpContextContract) {
-    const payload = await request.validate({ schema: ClassroomCreationSchema });
+    const payload = await request.validate({ schema: ClassroomUpdateSchema });
 
     const classroom = await Classroom.findOrFail(params.id);
 
@@ -60,9 +59,9 @@ export default class ClassroomsController {
   }
 
   // TODO: Only the owner can delete the classroom
-  public async destroy({ params }: HttpContextContract) {
+  public async destroy({ response, params }: HttpContextContract) {
     const classroom = await Classroom.findOrFail(params.id);
     await classroom.delete();
-    return classroom;
+    return response.ok({ message: "Classroom deleted successfully" });
   }
 }
