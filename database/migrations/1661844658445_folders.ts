@@ -1,17 +1,17 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
-  protected tableName = "users";
+  protected tableName = "folders";
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary();
-      table.string("email").unique();
-      table.string("password").notNullable();
-      table.string("first_name").notNullable();
-      table.string("last_name").notNullable();
-      table.string("profilePicture");
-      table.boolean("is_email_verified").defaultTo(false);
+      table.string("name").notNullable();
+      table.uuid("creator_id").references("users.id").onDelete("SET NULL");
+
+      /**
+       * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
+       */
       table.timestamp("created_at", { useTz: true });
       table.timestamp("updated_at", { useTz: true });
     });
