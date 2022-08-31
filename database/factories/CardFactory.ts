@@ -1,7 +1,8 @@
 import Card from "App/Models/Card";
 import Factory from "@ioc:Adonis/Lucid/Factory";
+import { ReportFactory } from "Database/factories/ReportFactory";
 
-export default Factory.define(Card, ({ faker }) => ({
+export const CardFactory = Factory.define(Card, ({ faker }) => ({
   content: {
     question: faker.lorem.sentence(),
     answers: faker.helpers.uniqueArray(
@@ -13,4 +14,6 @@ export default Factory.define(Card, ({ faker }) => ({
     ),
     type: "string",
   },
-})).build();
+}))
+  .relation("reports", () => ReportFactory)
+  .build();

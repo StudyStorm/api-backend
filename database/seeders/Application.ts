@@ -1,7 +1,8 @@
 import BaseSeeder from "@ioc:Adonis/Lucid/Seeder";
-import ClassroomFactory from "Database/factories/ClassroomFactory";
-import FolderFactory from "Database/factories/FolderFactory";
+import { ClassroomFactory } from "Database/factories/ClassroomFactory";
+import { FolderFactory } from "Database/factories/FolderFactory";
 import { faker } from "@faker-js/faker";
+import { AccessRight } from "App/Models/Classroom";
 
 /**
  * Generate tree of folders
@@ -31,7 +32,9 @@ export default class extends BaseSeeder {
       "users",
       faker.datatype.number({ min: 1, max: 4 }),
       (user) => {
-        user.pivotAttributes({ access_right: "owner" });
+        user.pivotAttributes({
+          access_right: faker.helpers.arrayElement(Object.values(AccessRight)),
+        });
       }
     ).createMany(10);
     await Promise.all(
@@ -56,8 +59,25 @@ export default class extends BaseSeeder {
                     .merge({
                       creatorId: faker.helpers.arrayElement(classroom.users).id,
                     })
+                    .with("ratings", faker.datatype.number(1), (rating) => {
+                      rating.merge({
+                        userId: faker.helpers.arrayElement(classroom.users).id,
+                      });
+                    })
                     // in each deck, generate 0 to 4 cards
-                    .with("cards", faker.datatype.number(4))
+                    .with("cards", faker.datatype.number(4), (card) => {
+                      card.with(
+                        "reports",
+                        faker.datatype.number(1),
+                        (report) => {
+                          report.merge({
+                            authorId: faker.helpers.arrayElement(
+                              classroom.users
+                            ).id,
+                          });
+                        }
+                      );
+                    })
                 )
           ).createMany(faker.datatype.number(5))
         );
