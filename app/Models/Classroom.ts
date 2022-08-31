@@ -7,6 +7,7 @@ import {
   ManyToMany,
   BelongsTo,
   belongsTo,
+  scope,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
@@ -17,21 +18,31 @@ export enum ClassroomVisibility {
   PRIVATE = "private",
 }
 
-export enum AccessRight {
-  READ = "read",
-  WRITE = "write",
+export enum ClassroomAccessRight {
+  R = "read",
+  RW = "read_write",
+  RWD = "read_write_delete",
   OWNER = "owner",
 }
 
 export default class Classroom extends BaseModel {
-  // TODO : Manage authorization with Bouncer
-
-  // public static visibleTo = scope((query, user: User) => {
-  // });
-
-  // public static modifiedBy = scope((query, user: User) => {
-
-  // }
+  public static canRead = scope<typeof Classroom>((query, user: User) => {
+    query
+      .where("visibility", ClassroomVisibility.PUBLIC)
+      .orWhereHas("users", (builder) => {
+        builder.where("user_id", user.id);
+      });
+  });
+  public static canWrite = scope<typeof Classroom>((query, user: User) => {
+    query.whereHas("users", (builder) => {
+      builder.where("user_id", user.id).andWhere((sub) => {
+        sub
+          .where("access_right", ClassroomAccessRight.RW)
+          .orWhere("access_right", ClassroomAccessRight.RWD)
+          .orWhere("access_right", ClassroomAccessRight.OWNER);
+      });
+    });
+  });
 
   @column({ isPrimary: true })
   public id: string;

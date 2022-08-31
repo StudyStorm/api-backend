@@ -1,5 +1,5 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
-import { AccessRight } from "App/Models/Classroom";
+import { ClassroomAccessRight } from "App/Models/Classroom";
 
 export default class extends BaseSchema {
   protected tableName = "user_classrooms";
@@ -10,7 +10,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.primary(["classroom_id", "user_id"]);
       table
-        .enu("access_right", Object.values(AccessRight), {
+        .enu("access_right", Object.values(ClassroomAccessRight), {
           enumName: "access_right",
           useNative: true,
           existingType: false,

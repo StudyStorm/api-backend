@@ -88,9 +88,11 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({ errors: [] });
   });
 
-  test("get a classroom by its uuid", async ({ client }) => {
+  test("get a public classroom by its uuid", async ({ client }) => {
     const user = await User.query().where("is_email_verified", true).first();
-    const classroom = await Classroom.first();
+    const classroom = await Classroom.query()
+      .where("visibility", ClassroomVisibility.PUBLIC)
+      .first();
 
     const response = await client
       .get(`v1/classrooms/${classroom!.id}`)
@@ -105,7 +107,24 @@ test.group("Classrooms", async (group) => {
     });
   });
 
-  test("successfully update a classroom", async ({ client }) => {
+  test("received a 403 error when not allowed to access the classroom", async ({
+    client,
+  }) => {
+    const user = await User.query().where("is_email_verified", true).first();
+    const classroom = await Classroom.query()
+      .where("visibility", ClassroomVisibility.PRIVATE)
+      .join("user_classrooms", "user_classrooms.classroom_id", "classrooms.id")
+      .where("user_classrooms.user_id", "!=", user!.id)
+      .first();
+
+    const response = await client
+      .get(`v1/classrooms/${classroom!.id}`)
+      .loginAs(user!);
+
+    response.assertStatus(403);
+  });
+
+  test("successfully update my classroom", async ({ client }) => {
     const user = await User.query().where("is_email_verified", true).first();
 
     await client
@@ -143,13 +162,11 @@ test.group("Classrooms", async (group) => {
       .post("v1/classrooms")
       .json({
         name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
+        visibility: ClassroomVisibility.PRIVATE,
       })
       .loginAs(user!);
 
-    const classroom = await Classroom.query()
-      .where("name", "Test Classroom")
-      .first();
+    const classroom = await Classroom.findBy("name", "Test Classroom");
 
     const response = await client
       .delete(`v1/classrooms/${classroom!.id}`)
