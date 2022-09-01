@@ -35,16 +35,26 @@ Route.group(() => {
 
   // Classrooms
   Route.group(() => {
-    Route.get("/classrooms", "ClassroomsController.index").as("index");
-    Route.post("/classrooms", "ClassroomsController.create").as("create");
-    Route.get("/classrooms/:id", "ClassroomsController.show")
-      .where("id", Route.matchers.uuid())
-      .as("show");
-    Route.patch("/classrooms/:id", "ClassroomsController.update")
-      .where("id", Route.matchers.uuid())
-      .as("update");
-    Route.delete("/classrooms/:id", "ClassroomsController.destroy")
-      .where("id", Route.matchers.uuid())
-      .as("destroy");
+    Route.get("/classrooms", "ClassroomsController.index");
+    Route.post("/classrooms", "ClassroomsController.create");
+    Route.get("/classrooms/:id", "ClassroomsController.show").where(
+      "id",
+      Route.matchers.uuid()
+    );
+    Route.patch("/classrooms/:id", "ClassroomsController.update").where(
+      "id",
+      Route.matchers.uuid()
+    );
+    Route.delete("/classrooms/:id", "ClassroomsController.destroy").where(
+      "id",
+      Route.matchers.uuid()
+    );
+  }).middleware("auth");
+
+  // Profile
+  Route.group(() => {
+    Route.get("/profile", "ProfilesController.index");
+    Route.patch("/profile", "ProfilesController.update");
+    Route.delete("/profile", "ProfilesController.destroy");
   }).middleware("auth");
 }).prefix("v1");
