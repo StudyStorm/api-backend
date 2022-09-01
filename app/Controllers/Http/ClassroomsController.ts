@@ -1,7 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Classroom, { ClassroomAccessRight } from "App/Models/Classroom";
 import ClassroomCreationSchema from "App/Schemas/ClassroomCreationSchema";
-import Database from "@ioc:Adonis/Lucid/Database";
 import ClassroomUpdateSchema from "App/Schemas/ClassroomUpdateSchema";
 
 export default class ClassroomsController {
@@ -26,18 +25,11 @@ export default class ClassroomsController {
     const payload = await request.validate({ schema: ClassroomCreationSchema });
 
     const user = auth.user!;
-    await Database.transaction(async (trx) => {
-      const classroom = await user
-        .useTransaction(trx)
-        .related("classrooms")
-        .create(payload, { access_right: ClassroomAccessRight.OWNER });
-      await Database.transaction(async (trx2) => {
-        classroom
-          .useTransaction(trx2)
-          .related("rootFolder")
-          .create({ name: "root" });
-      });
-    });
+    const classroom = await user
+      .related("classrooms")
+      .create(payload, { access_right: ClassroomAccessRight.OWNER });
+
+    classroom.related("rootFolder").create({ name: "root" });
     return response.created({ message: "Classroom created successfully" });
   }
 

@@ -6,6 +6,7 @@ import Classroom, {
   ClassroomVisibility,
 } from "App/Models/Classroom";
 import User from "App/Models/User";
+import { ClassroomFactory } from "Database/factories/ClassroomFactory";
 
 test.group("Classrooms", async (group) => {
   group.each.setup(async () => {
@@ -44,10 +45,10 @@ test.group("Classrooms", async (group) => {
 
   test("receive 404 code for bad queries", async ({ client }) => {
     const user = await User.query().where("is_email_verified", true).first();
-    const classrooms = await Classroom.all();
+    await ClassroomFactory.createMany(10);
 
     const response = await client
-      .get(`v1/classrooms?page=${classrooms.length}&limit=${classrooms.length}`)
+      .get("v1/classrooms?page=10&limit=10")
       .loginAs(user!);
 
     response.assertStatus(404);
