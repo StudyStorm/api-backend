@@ -31,7 +31,7 @@ export default class DecksController {
   /**
    * Update the specified deck
    */
-  public async update({ request, response }: HttpContextContract) {
+  public async update({ request }: HttpContextContract) {
     const deckId = request.param("id");
 
     const deck = await Deck.findOrFail(deckId);
@@ -48,8 +48,11 @@ export default class DecksController {
   /**
    * Delete the specified deck
    */
-  public async destroy() {
-    // delete the deck with the id
+  public async destroy({ request, response }: HttpContextContract) {
+    const deckId = request.param("id");
+    const deck = await Deck.findOrFail(deckId);
+    await deck.delete();
+    return response.ok({ message: "Deck deleted successfully" });
   }
 
   /**
