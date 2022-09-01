@@ -10,6 +10,14 @@ export const ClassroomFactory = Factory.define(
     visibility: faker.helpers.arrayElement(Object.values(ClassroomVisibility)),
   })
 )
+  .state(
+    "public",
+    (classroom) => (classroom.visibility = ClassroomVisibility.PUBLIC)
+  )
+  .state(
+    "private",
+    (classroom) => (classroom.visibility = ClassroomVisibility.PRIVATE)
+  )
   .relation("rootFolder", () => RootFolderFactory)
   .relation("users", () => UserFactory)
   .build();

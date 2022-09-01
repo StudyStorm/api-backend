@@ -15,14 +15,15 @@ test.group("Classrooms", async (group) => {
   });
 
   test("get all classrooms", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const user = await UserFactory.apply("verified").create();
+    await ClassroomFactory.with("rootFolder").createMany(10);
     const response = await client.get("v1/classrooms").loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({ meta: {}, data: [] });
   });
 
-  test("receive 404 code because not authorized", async ({ client }) => {
+  test("receive 401 code because not authorized", async ({ client }) => {
     const response = await client.get("v1/classrooms");
 
     response.assertStatus(401);
@@ -32,11 +33,9 @@ test.group("Classrooms", async (group) => {
   });
 
   test("get first page of 2 classrooms", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const user = await UserFactory.apply("verified").create();
 
-    await ClassroomFactory.merge({
-      visibility: ClassroomVisibility.PUBLIC,
-    }).createMany(10);
+    await ClassroomFactory.apply("public").createMany(10);
 
     const response = await client
       .get("v1/classrooms?page=1&limit=2")
@@ -50,7 +49,7 @@ test.group("Classrooms", async (group) => {
   });
 
   test("receive 404 code for bad queries", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const user = await UserFactory.apply("verified").create();
     await ClassroomFactory.createMany(10);
 
     const response = await client
@@ -64,7 +63,7 @@ test.group("Classrooms", async (group) => {
   });
 
   test("successfully create a classroom", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const user = await UserFactory.apply("verified").create();
     const response = await client
       .post("v1/classrooms")
       .json({
@@ -80,17 +79,19 @@ test.group("Classrooms", async (group) => {
   test("receive 422 for creating a classroom because it already exists", async ({
     client,
   }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
-
-    const classroom = await user.related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
-
-    classroom.related("rootFolder").create({ name: "root" });
+    const user = await UserFactory.apply("verified")
+      .with("classrooms", 1, (classroom) => {
+        classroom
+          .apply("public")
+          .with("rootFolder")
+          .merge({
+            name: "Test Classroom",
+          })
+          .pivotAttributes({
+            access_right: ClassroomAccessRight.OWNER,
+          });
+      })
+      .create();
 
     const response = await client
       .post("v1/classrooms")
@@ -105,10 +106,8 @@ test.group("Classrooms", async (group) => {
   });
 
   test("get a public classroom by its uuid", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
-    const classroom = await Classroom.query()
-      .where("visibility", ClassroomVisibility.PUBLIC)
-      .first();
+    const user = await UserFactory.apply("verified").create();
+    const classroom = await ClassroomFactory.apply("public").create();
 
     const response = await client
       .get(`v1/classrooms/${classroom!.id}`)
@@ -125,12 +124,12 @@ test.group("Classrooms", async (group) => {
   test("received a 403 error when not allowed to access the classroom", async ({
     client,
   }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
-    const classroom = await Classroom.create({
-      name: "Test Classroom",
-      visibility: ClassroomVisibility.PRIVATE,
-    });
-    classroom.related("rootFolder").create({ name: "root" });
+    const user = await UserFactory.apply("verified").create();
+    const classroom = await ClassroomFactory.apply("private")
+      .merge({
+        name: "Test Classroom",
+      })
+      .create();
 
     const response = await client
       .get(`v1/classrooms/${classroom.id}`)
@@ -140,7 +139,7 @@ test.group("Classrooms", async (group) => {
   });
 
   test("successfully update my classroom", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const user = await UserFactory.apply("verified").create();
 
     await client
       .post("v1/classrooms")
@@ -170,7 +169,7 @@ test.group("Classrooms", async (group) => {
   });
 
   test("successfully delete a classroom", async ({ client }) => {
-    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const user = await UserFactory.apply("verified").create();
 
     await client
       .post("v1/classrooms")

@@ -2,10 +2,8 @@
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
 import { UserFactory } from "Database/factories/UserFactory";
-import {
-  ClassroomAccessRight,
-  ClassroomVisibility,
-} from "App/Models/Classroom";
+import { ClassroomAccessRight } from "App/Models/Classroom";
+import { ClassroomFactory } from "Database/factories/ClassroomFactory";
 
 test.group("Classrooms & Users", async (group) => {
   group.each.setup(async () => {
@@ -13,67 +11,81 @@ test.group("Classrooms & Users", async (group) => {
     return () => Database.rollbackGlobalTransaction();
   });
 
-  test("get all users from classroom", async ({ client }) => {
-    const users = await UserFactory.merge({ isEmailVerified: true }).createMany(
-      10
-    );
-    const classroom = await users[0].related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
+  test("get all users from public classroom", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("public")
+      .with("users", 10, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.OWNER });
+      })
+      .create();
 
     const response = await client
       .get(`v1/classrooms/${classroom.id}/users`)
-      .loginAs(users[0]);
+      .loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains([]);
   });
 
-  test("get 403 error when retreive users from classroom", async ({
-    client,
-  }) => {
-    const users = await UserFactory.merge({ isEmailVerified: true }).createMany(
-      10
-    );
-    const classroom = await users[0].related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PRIVATE,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
+  test("get all users from private classroom", async ({ client }) => {
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("private")
+      .with("users", 10, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R });
+      })
+      .create();
 
     const response = await client
       .get(`v1/classrooms/${classroom.id}/users`)
-      .loginAs(users[1]); // User 1 is not added in the classroom
+      .loginAs(classroom.users[0]);
+
+    response.assertStatus(200);
+    response.assertBodyContains([]);
+  });
+
+  test("get 403 error when retrieve users from private classroom", async ({
+    client,
+  }) => {
+    const user = await UserFactory.apply("verified").create();
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("private")
+      .with("users", 10, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.OWNER });
+      })
+      .create();
+
+    const response = await client
+      .get(`v1/classrooms/${classroom.id}/users`)
+      .loginAs(user);
 
     response.assertStatus(403);
   });
 
   test("successfully add user to classroom", async ({ client }) => {
-    const users = await UserFactory.merge({ isEmailVerified: true }).createMany(
-      10
-    );
-    const classroom = await users[0].related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
-
+    const userToAdd = await UserFactory.apply("verified").create();
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("public")
+      .with("users", 1, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.OWNER });
+      })
+      .create();
     const response = await client
       .post(`v1/classrooms/users`)
       .json({
         classroomId: classroom.id,
-        email: users[1].email,
+        email: userToAdd.email,
         accessRight: ClassroomAccessRight.RW,
       })
-      .loginAs(users[0]);
+      .loginAs(classroom.users[0]);
 
     response.assertStatus(201);
     response.assertBodyContains({
@@ -84,25 +96,23 @@ test.group("Classrooms & Users", async (group) => {
   test("get 400 error when adding existing user to classroom", async ({
     client,
   }) => {
-    const users = await UserFactory.merge({ isEmailVerified: true }).createMany(
-      10
-    );
-    const classroom = await users[0].related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("public")
+      .with("users", 2, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.OWNER });
+      })
+      .create();
 
     const response = await client
       .post(`v1/classrooms/users`)
       .json({
         classroomId: classroom.id,
-        email: users[0].email,
+        email: classroom.users[0].email,
         accessRight: ClassroomAccessRight.RW,
       })
-      .loginAs(users[0]);
+      .loginAs(classroom.users[1]);
 
     response.assertStatus(400);
     response.assertBodyContains({
@@ -113,34 +123,23 @@ test.group("Classrooms & Users", async (group) => {
   test("successfully update an user rights for a classroom", async ({
     client,
   }) => {
-    const users = await UserFactory.merge({ isEmailVerified: true }).createMany(
-      10
-    );
-    const classroom = await users[0].related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
-
-    await client
-      .post(`v1/classrooms/users`)
-      .json({
-        classroomId: classroom.id,
-        email: users[1].email,
-        accessRight: ClassroomAccessRight.RW,
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("public")
+      .with("users", 2, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.OWNER });
       })
-      .loginAs(users[0]);
+      .create();
 
     const response = await client
       .patch(`v1/classrooms/users`)
       .json({
         classroomId: classroom.id,
-        email: users[1].email,
+        email: classroom.users[1].email,
         accessRight: ClassroomAccessRight.RWD,
       })
-      .loginAs(users[0]);
+      .loginAs(classroom.users[0]);
 
     response.assertStatus(200);
     response.assertBodyContains({
@@ -149,33 +148,22 @@ test.group("Classrooms & Users", async (group) => {
   });
 
   test("successfully delete an user from classroom", async ({ client }) => {
-    const users = await UserFactory.merge({ isEmailVerified: true }).createMany(
-      10
-    );
-    const classroom = await users[0].related("classrooms").create(
-      {
-        name: "Test Classroom",
-        visibility: ClassroomVisibility.PUBLIC,
-      },
-      { access_right: ClassroomAccessRight.OWNER }
-    );
-
-    await client
-      .post(`v1/classrooms/users`)
-      .json({
-        classroomId: classroom.id,
-        email: users[1].email,
-        accessRight: ClassroomAccessRight.RW,
+    const classroom = await ClassroomFactory.with("rootFolder")
+      .apply("public")
+      .with("users", 2, (users) => {
+        users
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.OWNER });
       })
-      .loginAs(users[0]);
+      .create();
 
     const response = await client
       .delete(`v1/classrooms/users`)
       .json({
         classroomId: classroom.id,
-        email: users[1].email,
+        email: classroom.users[1].email,
       })
-      .loginAs(users[0]);
+      .loginAs(classroom.users[0]);
 
     response.assertStatus(200);
     response.assertBodyContains({

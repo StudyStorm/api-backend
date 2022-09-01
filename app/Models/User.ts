@@ -22,6 +22,9 @@ export default class User extends BaseModel {
   public id: string;
 
   @column()
+  public isSuperAdmin: boolean;
+
+  @column()
   public email: string;
 
   @column({ serializeAs: null })
