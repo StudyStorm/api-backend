@@ -1,5 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Deck from "App/Models/Deck";
+import DecksUpdateSchema from "App/Schemas/DecksUpdateSchema";
 
 export default class DecksController {
   /**
@@ -8,36 +9,39 @@ export default class DecksController {
   public async index({ request, response }: HttpContextContract) {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);
+    const search = request.input("search", "");
 
-    const decks = await Deck.query().paginate(page, limit);
-
-    if (decks.isEmpty) {
-      return response.status(404).json({
-        message: "No decks found",
-      });
-    }
+    const decks = await Deck.query()
+      .where("name", "like", `%${search}%`)
+      .paginate(page, limit);
 
     return response.ok(decks);
   }
 
   /**
-   * Create a new card in deck
-   */
-  public async store() {
-    //
-  }
-
-  /**
    * Get the specified deck informations and cards with the
    */
-  public async show() {
-    // return this deck from its id
+  public async show({ request, response }: HttpContextContract) {
+    const deckId = request.param("id");
+    const deck = await Deck.findOrFail(deckId);
+
+    return response.ok(deck);
   }
 
   /**
    * Update the specified deck
    */
-  public async update() {
+  public async update({ request, response }: HttpContextContract) {
+    const deckId = request.param("id");
+
+    const deck = await Deck.findOrFail(deckId);
+
+    const payload = await request.validate({
+      schema: DecksUpdateSchema,
+    });
+
+    deck.merge(payload).save();
+
     // patch the deck with the id
   }
 
