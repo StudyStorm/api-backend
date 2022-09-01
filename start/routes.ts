@@ -47,4 +47,10 @@ Route.group(() => {
       .where("id", Route.matchers.uuid())
       .as("destroy");
   }).middleware("auth");
+
+  // Profile
+  Route.group(() => {
+    Route.get("/profile", "ProfilesController.index");
+    // Route.patch("/profile", "ProfilesController.update").as("update");
+  }).middleware("auth");
 }).prefix("v1");
