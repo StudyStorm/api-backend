@@ -10,7 +10,7 @@ export default class ClassroomsController {
     const limit = request.input("limit", 10);
 
     const classrooms = await Classroom.query()
-      .withScopes((scopes) => scopes.canWrite(auth.user))
+      .withScopes((scopes) => scopes.canRead(auth.user))
       .paginate(page, limit);
 
     if (classrooms.isEmpty) {
@@ -31,8 +31,12 @@ export default class ClassroomsController {
         .useTransaction(trx)
         .related("classrooms")
         .create(payload, { access_right: ClassroomAccessRight.OWNER });
-
-      // classroom.related("rootFolder").create({ name: "root" });
+      await Database.transaction(async (trx2) => {
+        classroom
+          .useTransaction(trx2)
+          .related("rootFolder")
+          .create({ name: "root" });
+      });
     });
     return response.created({ message: "Classroom created successfully" });
   }

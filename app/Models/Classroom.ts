@@ -5,8 +5,6 @@ import {
   beforeCreate,
   manyToMany,
   ManyToMany,
-  BelongsTo,
-  belongsTo,
   scope,
   hasMany,
   HasMany,
@@ -64,9 +62,7 @@ export default class Classroom extends BaseModel {
   })
   public rootFolder: HasOne<typeof Folder>;
 
-  @hasMany(() => Folder, {
-    localKey: "classroomId",
-  })
+  @hasMany(() => Folder)
   public folders: HasMany<typeof Folder>;
 
   @manyToMany(() => User, {

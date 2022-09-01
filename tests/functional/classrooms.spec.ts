@@ -6,7 +6,6 @@ import Classroom, {
   ClassroomVisibility,
 } from "App/Models/Classroom";
 import User from "App/Models/User";
-import Folder from "App/Models/Folder";
 
 test.group("Classrooms", async (group) => {
   group.each.setup(async () => {
@@ -119,18 +118,14 @@ test.group("Classrooms", async (group) => {
   });
 
   test("received a 403 error when not allowed to access the classroom", async ({
-    assert,
     client,
   }) => {
     const user = await User.query().where("is_email_verified", true).first();
-    const classroom = await Classroom.query()
-      .where("visibility", ClassroomVisibility.PRIVATE)
-      .join("user_classrooms", "user_classrooms.classroom_id", "classrooms.id")
-      .where("user_classrooms.user_id", "!=", user!.id)
-      .first();
-
-    assert.exists(classroom);
-    console.log("classroom", classroom?.toJSON());
+    const classroom = await Classroom.create({
+      name: "Test Classroom",
+      visibility: ClassroomVisibility.PRIVATE,
+    });
+    classroom.related("rootFolder").create({ name: "root" });
 
     const response = await client
       .get(`v1/classrooms/${classroom!.id}`)

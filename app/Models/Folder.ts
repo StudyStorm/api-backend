@@ -7,7 +7,6 @@ import {
   column,
   HasMany,
   hasMany,
-  ModelAssignOptions,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
