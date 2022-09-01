@@ -7,9 +7,6 @@ import {
   column,
   HasMany,
   hasMany,
-  HasOne,
-  hasOne,
-  ModelAssignOptions,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
@@ -27,12 +24,15 @@ export default class Folder extends BaseModel {
   public creatorId: string;
 
   @column()
+  public classroomId: string;
+
+  @column()
   public parentId: string;
 
-  @hasOne(() => Classroom, {
-    localKey: "rootFolderId",
+  @belongsTo(() => Classroom, {
+    foreignKey: "classroomId",
   })
-  public classroom: HasOne<typeof Classroom>;
+  public classroom: BelongsTo<typeof Classroom>;
 
   @belongsTo(() => User, {
     foreignKey: "creatorId",
@@ -63,15 +63,6 @@ export default class Folder extends BaseModel {
   @beforeCreate()
   public static assignUuid(folder: Folder) {
     folder.id = uuid();
-  }
-
-  public static createRoot(options?: ModelAssignOptions): Promise<Folder> {
-    return this.create(
-      {
-        name: "root",
-      },
-      options
-    );
   }
 
   public getDescendantFolders() {

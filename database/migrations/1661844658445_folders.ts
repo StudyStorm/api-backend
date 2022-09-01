@@ -8,6 +8,10 @@ export default class extends BaseSchema {
       table.uuid("id").primary();
       table.string("name").notNullable();
       table.uuid("creator_id").references("users.id").onDelete("SET NULL");
+      table
+        .uuid("classroom_id")
+        .references("classrooms.id")
+        .onDelete("CASCADE");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

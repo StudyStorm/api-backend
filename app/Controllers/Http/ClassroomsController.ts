@@ -1,8 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Classroom, { ClassroomAccessRight } from "App/Models/Classroom";
 import ClassroomCreationSchema from "App/Schemas/ClassroomCreationSchema";
-import Folder from "App/Models/Folder";
-import Database from "@ioc:Adonis/Lucid/Database";
 import ClassroomUpdateSchema from "App/Schemas/ClassroomUpdateSchema";
 
 export default class ClassroomsController {
@@ -11,7 +9,7 @@ export default class ClassroomsController {
     const limit = request.input("limit", 10);
 
     const classrooms = await Classroom.query()
-      .withScopes((scopes) => scopes.canWrite(auth.user))
+      .withScopes((scopes) => scopes.canRead(auth.user))
       .paginate(page, limit);
 
     if (classrooms.isEmpty) {
@@ -27,19 +25,11 @@ export default class ClassroomsController {
     const payload = await request.validate({ schema: ClassroomCreationSchema });
 
     const user = auth.user!;
-    await Database.transaction(async (trx) => {
-      const rootFolder = await Folder.createRoot({ client: trx });
-      await user
-        .useTransaction(trx)
-        .related("classrooms")
-        .create(
-          {
-            ...payload,
-            rootFolderId: rootFolder.id,
-          },
-          { access_right: ClassroomAccessRight.OWNER }
-        );
-    });
+    const classroom = await user
+      .related("classrooms")
+      .create(payload, { access_right: ClassroomAccessRight.OWNER });
+
+    classroom.related("rootFolder").create({ name: "root" });
     return response.created({ message: "Classroom created successfully" });
   }
 
@@ -49,7 +39,6 @@ export default class ClassroomsController {
     return classroom;
   }
 
-  // TODO: Only the owner can modify the classroom
   public async update({ request, params, bouncer }: HttpContextContract) {
     const classroom = await Classroom.findOrFail(params.id);
 
@@ -61,7 +50,6 @@ export default class ClassroomsController {
     return classroom;
   }
 
-  // TODO: Only the owner can delete the classroom
   public async destroy({ response, params, bouncer }: HttpContextContract) {
     const classroom = await Classroom.findOrFail(params.id);
     await bouncer.with("ClassroomPolicy").authorize("owner", classroom);

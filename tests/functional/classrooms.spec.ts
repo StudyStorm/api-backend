@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
-import Classroom, { ClassroomVisibility } from "App/Models/Classroom";
+import Classroom, {
+  ClassroomAccessRight,
+  ClassroomVisibility,
+} from "App/Models/Classroom";
 import User from "App/Models/User";
+import { ClassroomFactory } from "Database/factories/ClassroomFactory";
 
 test.group("Classrooms", async (group) => {
   group.each.setup(async () => {
@@ -41,10 +45,10 @@ test.group("Classrooms", async (group) => {
 
   test("receive 404 code for bad queries", async ({ client }) => {
     const user = await User.query().where("is_email_verified", true).first();
-    const classrooms = await Classroom.all();
+    await ClassroomFactory.createMany(10);
 
     const response = await client
-      .get(`v1/classrooms?page=${classrooms.length}&limit=${classrooms.length}`)
+      .get("v1/classrooms?page=10&limit=10")
       .loginAs(user!);
 
     response.assertStatus(404);
@@ -70,12 +74,20 @@ test.group("Classrooms", async (group) => {
   test("receive 422 for creating a classroom because it already exists", async ({
     client,
   }) => {
-    await Classroom.create({
-      name: "Test Classroom",
-      visibility: ClassroomVisibility.PUBLIC,
-    });
+    const user = await User.query()
+      .where("is_email_verified", true)
+      .firstOrFail();
 
-    const user = await User.query().where("is_email_verified", true).first();
+    const classroom = await user.related("classrooms").create(
+      {
+        name: "Test Classroom",
+        visibility: ClassroomVisibility.PUBLIC,
+      },
+      { access_right: ClassroomAccessRight.OWNER }
+    );
+
+    classroom.related("rootFolder").create({ name: "root" });
+
     const response = await client
       .post("v1/classrooms")
       .json({
@@ -102,7 +114,6 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({
       id: classroom!.id,
       name: classroom!.name,
-      root_folder_id: classroom!.rootFolderId,
       visibility: classroom!.visibility,
     });
   });
@@ -111,11 +122,11 @@ test.group("Classrooms", async (group) => {
     client,
   }) => {
     const user = await User.query().where("is_email_verified", true).first();
-    const classroom = await Classroom.query()
-      .where("visibility", ClassroomVisibility.PRIVATE)
-      .join("user_classrooms", "user_classrooms.classroom_id", "classrooms.id")
-      .where("user_classrooms.user_id", "!=", user!.id)
-      .first();
+    const classroom = await Classroom.create({
+      name: "Test Classroom",
+      visibility: ClassroomVisibility.PRIVATE,
+    });
+    classroom.related("rootFolder").create({ name: "root" });
 
     const response = await client
       .get(`v1/classrooms/${classroom!.id}`)
@@ -150,7 +161,6 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({
       id: classroom!.id,
       name: "Test Classroom Updated",
-      root_folder_id: classroom!.rootFolderId,
       visibility: classroom!.visibility,
     });
   });

@@ -5,9 +5,11 @@ import {
   beforeCreate,
   manyToMany,
   ManyToMany,
-  BelongsTo,
-  belongsTo,
   scope,
+  hasMany,
+  HasMany,
+  hasOne,
+  HasOne,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
@@ -53,13 +55,15 @@ export default class Classroom extends BaseModel {
   @column()
   public visibility: ClassroomVisibility;
 
-  @column()
-  public rootFolderId: string;
-
-  @belongsTo(() => Folder, {
-    foreignKey: "rootFolderId",
+  @hasOne(() => Folder, {
+    onQuery: (query) => {
+      query.whereNull("parent_id").limit(1);
+    },
   })
-  public rootFolder: BelongsTo<typeof Folder>;
+  public rootFolder: HasOne<typeof Folder>;
+
+  @hasMany(() => Folder)
+  public folders: HasMany<typeof Folder>;
 
   @manyToMany(() => User, {
     pivotTable: "user_classrooms",
@@ -76,13 +80,5 @@ export default class Classroom extends BaseModel {
   @beforeCreate()
   public static assignUuid(classroom: Classroom) {
     classroom.id = uuid();
-  }
-
-  @beforeCreate()
-  public static async assignRootFolderId(classroom: Classroom) {
-    const rootFolder = await Folder.create({
-      name: "root",
-    });
-    classroom.rootFolderId = rootFolder.id;
   }
 }

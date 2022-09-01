@@ -29,6 +29,11 @@ export default class extends BaseSeeder {
 
     // Create classroom with user id
     const classrooms = await ClassroomFactory.with("rootFolder")
+      .with("users", 1, (user) => {
+        user.pivotAttributes({
+          access_right: ClassroomAccessRight.OWNER,
+        });
+      })
       .with("users", faker.datatype.number({ min: 1, max: 4 }), (user) => {
         user.pivotAttributes({
           access_right: faker.helpers.arrayElement(
@@ -53,6 +58,7 @@ export default class extends BaseSeeder {
               folder
                 .merge({
                   creatorId: faker.helpers.arrayElement(classroom.users).id,
+                  classroomId: classroom.id,
                 })
                 .with("decks", faker.datatype.number(3), (deck) =>
                   deck
