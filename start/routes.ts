@@ -73,10 +73,8 @@ Route.group(() => {
       "id",
       Route.matchers.uuid()
     );
-
-    Route.post("/decks/:id/cards", "DecksController.addCard").where(
-      "id",
-      Route.matchers.uuid()
-    );
+    Route.post("/decks/cards", "DecksController.addCard");
+    Route.patch("/decks/cards", "DecksController.updateCard");
+    Route.delete("/decks/cards", "DecksController.destroyCard");
   }).middleware("auth");
 }).prefix("v1");
