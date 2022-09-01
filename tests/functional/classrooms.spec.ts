@@ -5,17 +5,18 @@ import Classroom, {
   ClassroomAccessRight,
   ClassroomVisibility,
 } from "App/Models/Classroom";
-import User from "App/Models/User";
 import { ClassroomFactory } from "Database/factories/ClassroomFactory";
+import { UserFactory } from "Database/factories/UserFactory";
 
 test.group("Classrooms", async (group) => {
   group.each.setup(async () => {
     await Database.beginGlobalTransaction();
     return () => Database.rollbackGlobalTransaction();
   });
+
   test("get all classrooms", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
-    const response = await client.get("v1/classrooms").loginAs(user!);
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+    const response = await client.get("v1/classrooms").loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({ meta: {}, data: [] });
@@ -31,10 +32,15 @@ test.group("Classrooms", async (group) => {
   });
 
   test("get first page of 2 classrooms", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
+
+    await ClassroomFactory.merge({
+      visibility: ClassroomVisibility.PUBLIC,
+    }).createMany(10);
+
     const response = await client
       .get("v1/classrooms?page=1&limit=2")
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({
@@ -44,12 +50,12 @@ test.group("Classrooms", async (group) => {
   });
 
   test("receive 404 code for bad queries", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
     await ClassroomFactory.createMany(10);
 
     const response = await client
       .get("v1/classrooms?page=10&limit=10")
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(404);
     response.assertBodyContains({
@@ -58,14 +64,14 @@ test.group("Classrooms", async (group) => {
   });
 
   test("successfully create a classroom", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
     const response = await client
       .post("v1/classrooms")
       .json({
         name: "Test Classroom",
         visibility: ClassroomVisibility.PUBLIC,
       })
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(201);
     response.assertBodyContains({ message: "Classroom created successfully" });
@@ -74,9 +80,7 @@ test.group("Classrooms", async (group) => {
   test("receive 422 for creating a classroom because it already exists", async ({
     client,
   }) => {
-    const user = await User.query()
-      .where("is_email_verified", true)
-      .firstOrFail();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
 
     const classroom = await user.related("classrooms").create(
       {
@@ -94,21 +98,21 @@ test.group("Classrooms", async (group) => {
         name: "Test Classroom",
         visibility: ClassroomVisibility.PUBLIC,
       })
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(422);
     response.assertBodyContains({ errors: [] });
   });
 
   test("get a public classroom by its uuid", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
     const classroom = await Classroom.query()
       .where("visibility", ClassroomVisibility.PUBLIC)
       .first();
 
     const response = await client
       .get(`v1/classrooms/${classroom!.id}`)
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({
@@ -121,7 +125,7 @@ test.group("Classrooms", async (group) => {
   test("received a 403 error when not allowed to access the classroom", async ({
     client,
   }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
     const classroom = await Classroom.create({
       name: "Test Classroom",
       visibility: ClassroomVisibility.PRIVATE,
@@ -129,14 +133,14 @@ test.group("Classrooms", async (group) => {
     classroom.related("rootFolder").create({ name: "root" });
 
     const response = await client
-      .get(`v1/classrooms/${classroom!.id}`)
-      .loginAs(user!);
+      .get(`v1/classrooms/${classroom.id}`)
+      .loginAs(user);
 
     response.assertStatus(403);
   });
 
   test("successfully update my classroom", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
 
     await client
       .post("v1/classrooms")
@@ -144,7 +148,7 @@ test.group("Classrooms", async (group) => {
         name: "Test Classroom",
         visibility: ClassroomVisibility.PUBLIC,
       })
-      .loginAs(user!);
+      .loginAs(user);
 
     const classroom = await Classroom.query()
       .where("name", "Test Classroom")
@@ -155,7 +159,7 @@ test.group("Classrooms", async (group) => {
       .json({
         name: "Test Classroom Updated",
       })
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({
@@ -166,7 +170,7 @@ test.group("Classrooms", async (group) => {
   });
 
   test("successfully delete a classroom", async ({ client }) => {
-    const user = await User.query().where("is_email_verified", true).first();
+    const user = await UserFactory.merge({ isEmailVerified: true }).create();
 
     await client
       .post("v1/classrooms")
@@ -174,13 +178,13 @@ test.group("Classrooms", async (group) => {
         name: "Test Classroom",
         visibility: ClassroomVisibility.PRIVATE,
       })
-      .loginAs(user!);
+      .loginAs(user);
 
     const classroom = await Classroom.findBy("name", "Test Classroom");
 
     const response = await client
       .delete(`v1/classrooms/${classroom!.id}`)
-      .loginAs(user!);
+      .loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({ message: "Classroom deleted successfully" });
