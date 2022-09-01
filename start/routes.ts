@@ -24,8 +24,7 @@ Route.get("/", async () => {
   return { hello: "DEMO" };
 });
 
-Route.get("folder/desc/:id", "FoldersController.getDescendants");
-Route.get("folder/asc/:id", "FoldersController.getAscendants");
+// Main api routes
 
 Route.group(() => {
   // Auth
@@ -36,11 +35,12 @@ Route.group(() => {
     Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
   });
 
-  // Classrooms
+  // Authenticated routes
   Route.group(() => {
+    // Classrooms
     Route.group(() => {
-      Route.get("/", "ClassroomsController.index").as("index");
-      Route.post("/", "ClassroomsController.create").as("create");
+      Route.get("/", "ClassroomsController.index");
+      Route.post("/", "ClassroomsController.create");
       Route.get("/:id", "ClassroomsController.show")
         .where("id", Route.matchers.uuid())
         .as("show");
@@ -50,8 +50,20 @@ Route.group(() => {
       Route.delete("/:id", "ClassroomsController.destroy")
         .where("id", Route.matchers.uuid())
         .as("destroy");
+
+      // Classroom Users
+      Route.group(() => {
+        Route.get("/:id/users", "ClassroomsController.users").where(
+          "id",
+          Route.matchers.uuid()
+        );
+        Route.post("/users", "ClassroomsController.addUser");
+        Route.patch("/users", "ClassroomsController.updateUser");
+        Route.delete("/users", "ClassroomsController.removeUser");
+      });
     }).prefix("classrooms");
 
+    // Folders
     Route.group(() => {
       Route.get("/:id", "FoldersController.show").where(
         "id",
@@ -74,5 +86,12 @@ Route.group(() => {
         Route.matchers.uuid()
       );
     }).prefix("folders");
+
+    // Profile
+    Route.group(() => {
+      Route.get("/", "ProfilesController.index");
+      Route.patch("/", "ProfilesController.update");
+      Route.delete("/", "ProfilesController.destroy");
+    }).prefix("profile");
   }).middleware("auth");
 }).prefix("v1");
