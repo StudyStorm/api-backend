@@ -57,4 +57,26 @@ Route.group(() => {
     Route.patch("/profile", "ProfilesController.update");
     Route.delete("/profile", "ProfilesController.destroy");
   }).middleware("auth");
+
+  // Decks
+  Route.group(() => {
+    Route.get("/decks", "DecksController.index");
+    Route.get("/decks/:id", "DecksController.show").where(
+      "id",
+      Route.matchers.uuid()
+    );
+    Route.patch("/decks/:id", "DecksController.update").where(
+      "id",
+      Route.matchers.uuid()
+    );
+    Route.delete("/decks/:id", "DecksController.destroy").where(
+      "id",
+      Route.matchers.uuid()
+    );
+
+    Route.post("/decks/:id/cards", "DecksController.addCard").where(
+      "id",
+      Route.matchers.uuid()
+    );
+  }).middleware("auth");
 }).prefix("v1");
