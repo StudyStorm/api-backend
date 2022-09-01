@@ -56,9 +56,7 @@ Route.group(() => {
     );
     Route.post("/classrooms/users", "ClassroomsController.addUser");
     Route.patch("/classrooms/users", "ClassroomsController.updateUser");
-    Route.delete("/classrooms/users/", "ClassroomsController.removeUser")
-      .where("id", Route.matchers.uuid())
-      .where("userId", Route.matchers.uuid());
+    Route.delete("/classrooms/users/", "ClassroomsController.removeUser");
   }).middleware("auth");
 
   // Profile
