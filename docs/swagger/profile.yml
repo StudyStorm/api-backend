@@ -1,0 +1,54 @@
+/v1/profile:
+  get:
+    tags:
+      - Profile
+    security: []
+    description: Get connected user profile informations
+    parameters:
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+  patch:
+    tags:
+      - Profile
+    security: []
+    description: Update connected user profile informations
+    parameters:
+      - in:  body
+        required: true
+        schema:
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+    produces:
+      - application/json
+    responses:
+      201:
+        description: Success
+      401:
+        description: Unauthorized
+      422:
+        description: Unprocessable Entity
+  delete:
+    tags:
+      - Profile
+    security: []
+    description: Delete the connected user account
+    parameters:
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
