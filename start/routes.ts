@@ -38,16 +38,41 @@ Route.group(() => {
 
   // Classrooms
   Route.group(() => {
-    Route.get("/classrooms", "ClassroomsController.index").as("index");
-    Route.post("/classrooms", "ClassroomsController.create").as("create");
-    Route.get("/classrooms/:id", "ClassroomsController.show")
-      .where("id", Route.matchers.uuid())
-      .as("show");
-    Route.patch("/classrooms/:id", "ClassroomsController.update")
-      .where("id", Route.matchers.uuid())
-      .as("update");
-    Route.delete("/classrooms/:id", "ClassroomsController.destroy")
-      .where("id", Route.matchers.uuid())
-      .as("destroy");
+    Route.group(() => {
+      Route.get("/", "ClassroomsController.index").as("index");
+      Route.post("/", "ClassroomsController.create").as("create");
+      Route.get("/:id", "ClassroomsController.show")
+        .where("id", Route.matchers.uuid())
+        .as("show");
+      Route.patch("/:id", "ClassroomsController.update")
+        .where("id", Route.matchers.uuid())
+        .as("update");
+      Route.delete("/:id", "ClassroomsController.destroy")
+        .where("id", Route.matchers.uuid())
+        .as("destroy");
+    }).prefix("classrooms");
+
+    Route.group(() => {
+      Route.get("/:id", "FoldersController.show").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.post("/:id", "FoldersController.create").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.post("/:id/decks", "FoldersController.createDeck").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.patch("/:id", "FoldersController.update").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/:id", "FoldersController.destroy").where(
+        "id",
+        Route.matchers.uuid()
+      );
+    }).prefix("folders");
   }).middleware("auth");
 }).prefix("v1");

@@ -10,6 +10,7 @@ export default class ClassroomsController {
 
     const classrooms = await Classroom.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
+      .preload("rootFolder")
       .paginate(page, limit);
 
     if (classrooms.isEmpty) {
@@ -35,7 +36,8 @@ export default class ClassroomsController {
 
   public async show({ params, bouncer }: HttpContextContract) {
     const classroom = await Classroom.findOrFail(params.id);
-    await bouncer.with("ClassroomPolicy").authorize("view", classroom);
+    await bouncer.with("ClassroomPolicy").authorize("read", classroom);
+    await classroom.load("rootFolder");
     return classroom;
   }
 

@@ -57,7 +57,7 @@ export default class Classroom extends BaseModel {
 
   @hasOne(() => Folder, {
     onQuery: (query) => {
-      query.whereNull("parent_id").limit(1);
+      query.whereNull("parent_id");
     },
   })
   public rootFolder: HasOne<typeof Folder>;
