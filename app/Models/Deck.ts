@@ -7,14 +7,28 @@ import {
   column,
   HasMany,
   hasMany,
+  scope,
 } from "@ioc:Adonis/Lucid/Orm";
 import Folder from "./Folder";
 import Card from "./Card";
 import { v4 as uuid } from "uuid";
 import User from "./User";
 import Rating from "App/Models/Rating";
+import { ClassroomVisibility } from "App/Models/Classroom";
 
 export default class Deck extends BaseModel {
+  public static canRead = scope<typeof Deck>((query, user: User) => {
+    query.whereHas("folder", (builder) => {
+      builder.whereHas("classroom", (classroomBuilder) => {
+        classroomBuilder
+          .where("visibility", ClassroomVisibility.PUBLIC)
+          .orWhereHas("users", (userBuilder) => {
+            userBuilder.where("user_id", user.id);
+          });
+      });
+    });
+  });
+
   @column({ isPrimary: true })
   public id: string;
 

@@ -1,8 +1,7 @@
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
-import { ClassroomFactory } from "../../database/factories/ClassroomFactory";
-import { ClassroomVisibility } from "App/Models/Classroom";
-import { ClassroomAccessRight } from "../../app/Models/Classroom";
+import { ClassroomFactory } from "Database/factories/ClassroomFactory";
+import { ClassroomAccessRight } from "App/Models/Classroom";
 
 test.group("Decks", (group) => {
   group.each.setup(async () => {
@@ -14,9 +13,7 @@ test.group("Decks", (group) => {
     await ClassroomFactory.with("rootFolder", 1, (folder) =>
       folder.with("decks", 5)
     )
-      .merge({
-        visibility: ClassroomVisibility.PUBLIC,
-      })
+      .apply("public")
       .create();
 
     const accessibleClassroom = await ClassroomFactory.with(
@@ -27,9 +24,7 @@ test.group("Decks", (group) => {
       .with("users", 1, (user) =>
         user.pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
-      .merge({
-        visibility: ClassroomVisibility.PRIVATE,
-      })
+      .apply("private")
       .create();
 
     const notAccessibleClassroom = await ClassroomFactory.with(
@@ -37,9 +32,7 @@ test.group("Decks", (group) => {
       1,
       (folder) => folder.with("decks", 5)
     )
-      .merge({
-        visibility: ClassroomVisibility.PRIVATE,
-      })
+      .apply("private")
       .create();
 
     const user = accessibleClassroom.users[0];

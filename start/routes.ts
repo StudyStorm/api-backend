@@ -87,31 +87,31 @@ Route.group(() => {
       );
     }).prefix("folders");
 
+    // Decks
+    Route.group(() => {
+      Route.get("", "DecksController.index");
+      Route.get("/:id", "DecksController.show").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.patch("/:id", "DecksController.update").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/:id", "DecksController.destroy").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.post("/cards", "DecksController.addCard");
+      Route.patch("/cards", "DecksController.updateCard");
+      Route.delete("/cards", "DecksController.destroyCard");
+    }).prefix("decks");
+
     // Profile
     Route.group(() => {
       Route.get("/", "ProfilesController.index");
       Route.patch("/", "ProfilesController.update");
       Route.delete("/", "ProfilesController.destroy");
     }).prefix("profile");
-  }).middleware("auth");
-
-  // Decks
-  Route.group(() => {
-    Route.get("/decks", "DecksController.index");
-    Route.get("/decks/:id", "DecksController.show").where(
-      "id",
-      Route.matchers.uuid()
-    );
-    Route.patch("/decks/:id", "DecksController.update").where(
-      "id",
-      Route.matchers.uuid()
-    );
-    Route.delete("/decks/:id", "DecksController.destroy").where(
-      "id",
-      Route.matchers.uuid()
-    );
-    Route.post("/decks/cards", "DecksController.addCard");
-    Route.patch("/decks/cards", "DecksController.updateCard");
-    Route.delete("/decks/cards", "DecksController.destroyCard");
   }).middleware("auth");
 }).prefix("v1");
