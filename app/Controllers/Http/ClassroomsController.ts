@@ -1,7 +1,10 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import { rules, schema } from "@ioc:Adonis/Core/Validator";
 import Classroom, { ClassroomAccessRight } from "App/Models/Classroom";
+import User from "App/Models/User";
 import ClassroomCreationSchema from "App/Schemas/ClassroomCreationSchema";
 import ClassroomUpdateSchema from "App/Schemas/ClassroomUpdateSchema";
+import ClassroomUserSchema from "App/Schemas/ClassroomUserSchema";
 
 export default class ClassroomsController {
   public async index({ response, request, auth }: HttpContextContract) {
@@ -55,5 +58,83 @@ export default class ClassroomsController {
     await bouncer.with("ClassroomPolicy").authorize("owner", classroom);
     await classroom.delete();
     return response.ok({ message: "Classroom deleted successfully" });
+  }
+
+  public async users({ response, bouncer, params }: HttpContextContract) {
+    const classroom = await Classroom.findOrFail(params.id);
+    await bouncer.with("ClassroomPolicy").authorize("view", classroom);
+
+    await classroom.load("users");
+    return response.ok(classroom.users);
+  }
+
+  public async addUser({ bouncer, response, request }: HttpContextContract) {
+    const payload = await request.validate({ schema: ClassroomUserSchema });
+    const classroom = await Classroom.findOrFail(payload.classroomId);
+
+    await bouncer.with("ClassroomPolicy").authorize("owner", classroom);
+
+    const user = await User.findByOrFail("email", payload.email);
+
+    await classroom.load("users");
+    if (classroom.users.map((u) => u.id).includes(user.id)) {
+      return response.badRequest({
+        message: "User is already in the classroom",
+      });
+    }
+    await classroom.related("users").attach({
+      [user.id]: {
+        access_right: ClassroomAccessRight.RW,
+      },
+    });
+
+    return response.created({
+      message: "User added successfully to classroom",
+    });
+  }
+
+  public async updateUser({ bouncer, response, request }: HttpContextContract) {
+    const payload = await request.validate({ schema: ClassroomUserSchema });
+    const classroom = await Classroom.findOrFail(payload.classroomId);
+
+    await bouncer.with("ClassroomPolicy").authorize("owner", classroom);
+
+    const user = await User.findByOrFail("email", payload.email);
+
+    await classroom
+      .related("users")
+      .pivotQuery()
+      .wherePivot("user_id", user.id)
+      .update("access_right", payload.accessRight);
+
+    return response.ok({
+      message: "User updated successfully",
+    });
+  }
+
+  public async removeUser({ bouncer, response, request }: HttpContextContract) {
+    const payload = await request.validate({
+      schema: schema.create({
+        classroomId: schema.string(),
+        email: schema.string({ trim: true }, [rules.email()]),
+      }),
+    });
+    const classroom = await Classroom.findOrFail(payload.classroomId);
+
+    await bouncer.with("ClassroomPolicy").authorize("owner", classroom);
+
+    const user = await User.findByOrFail("email", payload.email);
+
+    await classroom.load("users");
+    if (!classroom.users.map((u) => u.id).includes(user.id)) {
+      return response.badRequest({
+        message: "User is not in the classroom",
+      });
+    }
+    await classroom.related("users").detach([user.id]);
+
+    return response.ok({
+      message: "User deleted successfully to classroom",
+    });
   }
 }

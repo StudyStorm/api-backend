@@ -49,6 +49,14 @@ Route.group(() => {
       "id",
       Route.matchers.uuid()
     );
+    // Classroom Users
+    Route.get("/classrooms/:id/users", "ClassroomsController.users").where(
+      "id",
+      Route.matchers.uuid()
+    );
+    Route.post("/classrooms/users", "ClassroomsController.addUser");
+    Route.patch("/classrooms/users", "ClassroomsController.updateUser");
+    Route.delete("/classrooms/users/", "ClassroomsController.removeUser");
   }).middleware("auth");
 
   // Profile
