@@ -78,17 +78,15 @@ test.group("Classrooms", async (group) => {
       .where("is_email_verified", true)
       .firstOrFail();
 
-    await Database.transaction(async (trx) => {
-      const rootFolder = await Folder.createRoot({ client: trx });
-      await user.useTransaction(trx).related("classrooms").create(
-        {
-          name: "Test Classroom",
-          visibility: ClassroomVisibility.PUBLIC,
-          rootFolderId: rootFolder.id,
-        },
-        { access_right: ClassroomAccessRight.OWNER }
-      );
-    });
+    const classroom = await user.related("classrooms").create(
+      {
+        name: "Test Classroom",
+        visibility: ClassroomVisibility.PUBLIC,
+      },
+      { access_right: ClassroomAccessRight.OWNER }
+    );
+
+    classroom.related("rootFolder").create({ name: "root" });
 
     const response = await client
       .post("v1/classrooms")
@@ -116,12 +114,12 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({
       id: classroom!.id,
       name: classroom!.name,
-      root_folder_id: classroom!.rootFolderId,
       visibility: classroom!.visibility,
     });
   });
 
   test("received a 403 error when not allowed to access the classroom", async ({
+    assert,
     client,
   }) => {
     const user = await User.query().where("is_email_verified", true).first();
@@ -130,6 +128,9 @@ test.group("Classrooms", async (group) => {
       .join("user_classrooms", "user_classrooms.classroom_id", "classrooms.id")
       .where("user_classrooms.user_id", "!=", user!.id)
       .first();
+
+    assert.exists(classroom);
+    console.log("classroom", classroom?.toJSON());
 
     const response = await client
       .get(`v1/classrooms/${classroom!.id}`)
@@ -164,7 +165,6 @@ test.group("Classrooms", async (group) => {
     response.assertBodyContains({
       id: classroom!.id,
       name: "Test Classroom Updated",
-      root_folder_id: classroom!.rootFolderId,
       visibility: classroom!.visibility,
     });
   });

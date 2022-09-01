@@ -12,6 +12,7 @@ import {
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
 import User from "./User";
+import Classroom from "./Classroom";
 
 export default class Folder extends BaseModel {
   @column({ isPrimary: true })
@@ -29,10 +30,10 @@ export default class Folder extends BaseModel {
   @column()
   public parentId: string;
 
-  @belongsTo(() => Folder, {
+  @belongsTo(() => Classroom, {
     foreignKey: "classroomId",
   })
-  public classroom: BelongsTo<typeof Folder>;
+  public classroom: BelongsTo<typeof Classroom>;
 
   @belongsTo(() => User, {
     foreignKey: "creatorId",
@@ -63,14 +64,5 @@ export default class Folder extends BaseModel {
   @beforeCreate()
   public static assignUuid(folder: Folder) {
     folder.id = uuid();
-  }
-
-  public static createRoot(options?: ModelAssignOptions): Promise<Folder> {
-    return this.create(
-      {
-        name: "root",
-      },
-      options
-    );
   }
 }

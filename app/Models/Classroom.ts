@@ -10,6 +10,8 @@ import {
   scope,
   hasMany,
   HasMany,
+  hasOne,
+  HasOne,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
@@ -55,13 +57,12 @@ export default class Classroom extends BaseModel {
   @column()
   public visibility: ClassroomVisibility;
 
-  @column()
-  public rootFolderId: string;
-
-  @belongsTo(() => Folder, {
-    foreignKey: "rootFolderId",
+  @hasOne(() => Folder, {
+    onQuery: (query) => {
+      query.whereNull("parent_id").limit(1);
+    },
   })
-  public rootFolder: BelongsTo<typeof Folder>;
+  public rootFolder: HasOne<typeof Folder>;
 
   @hasMany(() => Folder, {
     localKey: "classroomId",
