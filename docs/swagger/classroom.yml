@@ -128,3 +128,107 @@
         description: Forbidden
       404:
         description: Not Found
+/v1/classrooms/{id}/users:
+  get:
+    tags:
+      - Classroom
+    security: []
+    description: Fetch all users for a classroom
+    parameters:
+      - in:  query
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+/v1/classrooms/users:
+  post:
+    tags:
+      - Classroom
+    security: []
+    description: Add user to a classroom
+    parameters:
+      - in:  body
+        required: true
+        schema:
+          properties:
+            classroomId:
+              type: string
+            email:
+              type: string
+            accessRight:
+              type: string
+              enum: [read, read_write, read_write_delete, owner]
+    produces:
+      - application/json
+    responses:
+      201:
+        description: Created
+      400:
+        description: Bad Request
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  patch:
+    tags:
+      - Classroom
+    security: []
+    description: Update user rights to a classroom
+    parameters:
+      - in:  body
+        required: true
+        schema:
+          properties:
+            classroomId:
+              type: string
+            email:
+              type: string
+            accessRight:
+              type: string
+              enum: [read, read_write, read_write_delete, owner]
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      400:
+        description: Bad Request
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  delete:
+    tags:
+      - Classroom
+    security: []
+    description: Delete an user from a classroom
+    parameters:
+      - in:  body
+        required: true
+        schema:
+          properties:
+            classroomId:
+              type: string
+            email:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      400:
+        description: Bad Request
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
