@@ -7,14 +7,11 @@ import {
   column,
   HasMany,
   hasMany,
-  HasOne,
-  hasOne,
   ModelAssignOptions,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
 import User from "./User";
-import Classroom from "./Classroom";
 
 export default class Folder extends BaseModel {
   @column({ isPrimary: true })
@@ -27,12 +24,15 @@ export default class Folder extends BaseModel {
   public creatorId: string;
 
   @column()
+  public classroomId: string;
+
+  @column()
   public parentId: string;
 
-  @hasOne(() => Classroom, {
-    localKey: "rootFolderId",
+  @belongsTo(() => Folder, {
+    foreignKey: "classroomId",
   })
-  public classroom: HasOne<typeof Classroom>;
+  public classroom: BelongsTo<typeof Folder>;
 
   @belongsTo(() => User, {
     foreignKey: "creatorId",

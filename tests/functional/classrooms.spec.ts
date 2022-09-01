@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
-import Classroom, { ClassroomVisibility } from "App/Models/Classroom";
+import Classroom, {
+  ClassroomAccessRight,
+  ClassroomVisibility,
+} from "App/Models/Classroom";
 import User from "App/Models/User";
+import Folder from "App/Models/Folder";
 
 test.group("Classrooms", async (group) => {
   group.each.setup(async () => {
@@ -70,12 +74,22 @@ test.group("Classrooms", async (group) => {
   test("receive 422 for creating a classroom because it already exists", async ({
     client,
   }) => {
-    await Classroom.create({
-      name: "Test Classroom",
-      visibility: ClassroomVisibility.PUBLIC,
+    const user = await User.query()
+      .where("is_email_verified", true)
+      .firstOrFail();
+
+    await Database.transaction(async (trx) => {
+      const rootFolder = await Folder.createRoot({ client: trx });
+      await user.useTransaction(trx).related("classrooms").create(
+        {
+          name: "Test Classroom",
+          visibility: ClassroomVisibility.PUBLIC,
+          rootFolderId: rootFolder.id,
+        },
+        { access_right: ClassroomAccessRight.OWNER }
+      );
     });
 
-    const user = await User.query().where("is_email_verified", true).first();
     const response = await client
       .post("v1/classrooms")
       .json({

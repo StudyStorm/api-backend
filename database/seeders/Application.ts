@@ -53,6 +53,7 @@ export default class extends BaseSeeder {
               folder
                 .merge({
                   creatorId: faker.helpers.arrayElement(classroom.users).id,
+                  classroomId: classroom.id,
                 })
                 .with("decks", faker.datatype.number(3), (deck) =>
                   deck

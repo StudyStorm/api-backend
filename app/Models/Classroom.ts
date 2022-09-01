@@ -8,6 +8,8 @@ import {
   BelongsTo,
   belongsTo,
   scope,
+  hasMany,
+  HasMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
@@ -61,6 +63,11 @@ export default class Classroom extends BaseModel {
   })
   public rootFolder: BelongsTo<typeof Folder>;
 
+  @hasMany(() => Folder, {
+    localKey: "classroomId",
+  })
+  public folders: HasMany<typeof Folder>;
+
   @manyToMany(() => User, {
     pivotTable: "user_classrooms",
     pivotColumns: ["access_right"],
@@ -76,13 +83,5 @@ export default class Classroom extends BaseModel {
   @beforeCreate()
   public static assignUuid(classroom: Classroom) {
     classroom.id = uuid();
-  }
-
-  @beforeCreate()
-  public static async assignRootFolderId(classroom: Classroom) {
-    const rootFolder = await Folder.create({
-      name: "root",
-    });
-    classroom.rootFolderId = rootFolder.id;
   }
 }
