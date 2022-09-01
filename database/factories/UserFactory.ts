@@ -13,5 +13,6 @@ export const UserFactory = Factory.define(User, ({ faker }) => {
     isEmailVerified: faker.datatype.boolean(),
   };
 })
+  .state("verified", (user) => (user.isEmailVerified = true))
   .relation("classrooms", () => ClassroomFactory)
   .build();

@@ -2,10 +2,7 @@
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
 import { UserFactory } from "Database/factories/UserFactory";
-import {
-  ClassroomAccessRight,
-  ClassroomVisibility,
-} from "App/Models/Classroom";
+import { ClassroomAccessRight } from "App/Models/Classroom";
 import { ClassroomFactory } from "Database/factories/ClassroomFactory";
 
 test.group("Classrooms & Users", async (group) => {
