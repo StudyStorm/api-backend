@@ -64,4 +64,46 @@ export default class Folder extends BaseModel {
   public static assignUuid(folder: Folder) {
     folder.id = uuid();
   }
+
+  public getDescendantFolders() {
+    if (!this.$isPersisted) throw new Error();
+    return Folder.getDescendantFolders(this.id);
+  }
+  public static getDescendantFolders(id: string) {
+    return Folder.query()
+      .withRecursive("tree", (query) => {
+        query
+          .from("folders as f1")
+          .select("f1.*")
+          .where("f1.id", id)
+          .union((subquery) => {
+            subquery
+              .from("folders as f2")
+              .select("f2.*")
+              .join("tree as t", "t.parent_id", "f2.id");
+          });
+      })
+      .from("tree");
+  }
+
+  public getAscendantFolders() {
+    if (!this.$isPersisted) throw new Error();
+    return Folder.getAscendantFolders(this.id);
+  }
+  public static getAscendantFolders(id: string) {
+    return Folder.query()
+      .withRecursive("tree", (query) => {
+        query
+          .from("folders as f1")
+          .select("f1.*")
+          .where("f1.id", id)
+          .unionAll((subquery) => {
+            subquery
+              .from("folders as f2")
+              .select("f2.*")
+              .join("tree as t", "t.id", "f2.parent_id");
+          });
+      })
+      .from("tree");
+  }
 }

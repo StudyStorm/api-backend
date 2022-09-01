@@ -1,0 +1,123 @@
+/v1/folders/{id}:
+  get:
+    tags:
+      - Folders
+    security: []
+    description: Fetch a folder
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the folder to fetch
+        required: true
+        schema:
+          type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  post:
+    tags:
+      - Folders
+    security: []
+    description: Create a folder
+    parameters:
+      - name: body
+        in: body
+        description: The folder to create
+        required: true
+        schema:
+          properties:
+            name:
+              type: string
+    produces:
+      - application/json
+    responses:
+      201:
+        description: Success
+      401:
+        description: Unauthorized
+  patch:
+    tags:
+      - Folders
+    security: []
+    description: Update a folder
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the folder to update
+        required: true
+        schema:
+          type: string
+      - name: body
+        in: body
+        description: The folder to update
+        required: true
+        schema:
+          properties:
+            name:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  delete:
+    tags:
+      - Folders
+    security: []
+    description: Delete a folder
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the folder to delete
+        required: true
+        schema:
+          type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+/v1/folders/{id}/decks:
+  post:
+    tags:
+      - Folders
+    security: []
+    description: Add a deck to a folder
+    parameters:
+      - name: id
+        in: path
+        description: The ID of the folder to add the deck to
+        required: true
+        schema:
+          type: string
+      - name: body
+        in: body
+        description: The deck to add to the folder
+        required: true
+        schema:
+          properties:
+            name:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found

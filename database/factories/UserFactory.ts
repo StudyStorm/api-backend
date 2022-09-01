@@ -1,5 +1,6 @@
 import Factory from "@ioc:Adonis/Lucid/Factory";
 import User from "App/Models/User";
+import { ClassroomFactory } from "Database/factories/ClassroomFactory";
 
 export const UserFactory = Factory.define(User, ({ faker }) => {
   const lastName = faker.name.lastName();
@@ -11,4 +12,7 @@ export const UserFactory = Factory.define(User, ({ faker }) => {
     email: faker.internet.email(firstName, lastName),
     isEmailVerified: faker.datatype.boolean(),
   };
-}).build();
+})
+  .state("verified", (user) => (user.isEmailVerified = true))
+  .relation("classrooms", () => ClassroomFactory)
+  .build();

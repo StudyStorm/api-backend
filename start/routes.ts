@@ -24,6 +24,8 @@ Route.get("/", async () => {
   return { hello: "DEMO" };
 });
 
+// Main api routes
+
 Route.group(() => {
   // Auth
   Route.group(() => {
@@ -33,29 +35,64 @@ Route.group(() => {
     Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
   });
 
-  // Classrooms
+  // Authenticated routes
   Route.group(() => {
-    Route.get("/classrooms", "ClassroomsController.index");
-    Route.post("/classrooms", "ClassroomsController.create");
-    Route.get("/classrooms/:id", "ClassroomsController.show").where(
-      "id",
-      Route.matchers.uuid()
-    );
-    Route.patch("/classrooms/:id", "ClassroomsController.update").where(
-      "id",
-      Route.matchers.uuid()
-    );
-    Route.delete("/classrooms/:id", "ClassroomsController.destroy").where(
-      "id",
-      Route.matchers.uuid()
-    );
-  }).middleware("auth");
+    // Classrooms
+    Route.group(() => {
+      Route.get("/", "ClassroomsController.index");
+      Route.post("/", "ClassroomsController.create");
+      Route.get("/:id", "ClassroomsController.show")
+        .where("id", Route.matchers.uuid())
+        .as("show");
+      Route.patch("/:id", "ClassroomsController.update")
+        .where("id", Route.matchers.uuid())
+        .as("update");
+      Route.delete("/:id", "ClassroomsController.destroy")
+        .where("id", Route.matchers.uuid())
+        .as("destroy");
 
-  // Profile
-  Route.group(() => {
-    Route.get("/profile", "ProfilesController.index");
-    Route.patch("/profile", "ProfilesController.update");
-    Route.delete("/profile", "ProfilesController.destroy");
+      // Classroom Users
+      Route.group(() => {
+        Route.get("/:id/users", "ClassroomsController.users").where(
+          "id",
+          Route.matchers.uuid()
+        );
+        Route.post("/users", "ClassroomsController.addUser");
+        Route.patch("/users", "ClassroomsController.updateUser");
+        Route.delete("/users", "ClassroomsController.removeUser");
+      });
+    }).prefix("classrooms");
+
+    // Folders
+    Route.group(() => {
+      Route.get("/:id", "FoldersController.show").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.post("/:id", "FoldersController.create").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.post("/:id/decks", "FoldersController.createDeck").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.patch("/:id", "FoldersController.update").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/:id", "FoldersController.destroy").where(
+        "id",
+        Route.matchers.uuid()
+      );
+    }).prefix("folders");
+
+    // Profile
+    Route.group(() => {
+      Route.get("/", "ProfilesController.index");
+      Route.patch("/", "ProfilesController.update");
+      Route.delete("/", "ProfilesController.destroy");
+    }).prefix("profile");
   }).middleware("auth");
 
   // Decks
