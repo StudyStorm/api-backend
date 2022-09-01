@@ -1,5 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Deck from "App/Models/Deck";
+import CardsCreationSchema from "App/Schemas/CardsCreationSchema";
 import DecksUpdateSchema from "App/Schemas/DecksUpdateSchema";
 
 export default class DecksController {
@@ -58,7 +59,19 @@ export default class DecksController {
   /**
    * Add a new card to the deck
    */
-  public async addCard() {
-    //
+  public async addCard({ request, response }: HttpContextContract) {
+    const { deckId, content } = await request.validate({
+      schema: CardsCreationSchema,
+    });
+
+    const deck = await Deck.findOrFail(deckId);
+    const card = await deck.related("cards").create({ content: content });
+    return response.created(card);
   }
+
+  // /* Update a new card to the deck */
+  // public async updateCard({}: HttpContextContract) {}
+
+  // /* Delete a card from the deck */
+  // public async destroyCard({}: HttpContextContract) {}
 }

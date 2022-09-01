@@ -76,7 +76,7 @@
         description: Unauthorized
       404:
         description: Not Found
-/v1/decks/{id}/cards:
+/v1/decks/cards:
   post:
     tags:
       - Decks
@@ -87,22 +87,29 @@
         required: true
         schema:
           properties:
-            question:
+            deckId:
               type: string
               required: true
-            type:
-              type: string
+            content:
+              type: object
               required: true
-            answers:
-              type: array
-              items:
-                type: object
-                properties:
-                  label:
-                    type: string
-                    required: true
-                  isTheAnswer:
-                    type: boolean
+              properties:
+                question:
+                  type: string
+                  required: true
+                type:
+                  type: string
+                  required: true
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                        required: true
+                      isTheAnswer:
+                        type: boolean
     produces:
       - application/json
     responses:
