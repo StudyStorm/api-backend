@@ -22,7 +22,6 @@ export default class FoldersController {
   /**
    * Create a subfolder
    * @param request
-   * @param response
    */
   public async create({ request, auth, bouncer }: HttpContextContract) {
     const { id } = request.params();

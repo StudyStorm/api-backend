@@ -7,14 +7,29 @@ import {
   column,
   HasMany,
   hasMany,
+  ManyToMany,
+  manyToMany,
+  scope,
 } from "@ioc:Adonis/Lucid/Orm";
 import Folder from "./Folder";
 import Card from "./Card";
 import { v4 as uuid } from "uuid";
 import User from "./User";
-import Rating from "App/Models/Rating";
+import { ClassroomVisibility } from "App/Models/Classroom";
 
 export default class Deck extends BaseModel {
+  public static canRead = scope<typeof Deck>((query, user: User) => {
+    query.whereHas("folder", (builder) => {
+      builder.whereHas("classroom", (classroomBuilder) => {
+        classroomBuilder
+          .where("visibility", ClassroomVisibility.PUBLIC)
+          .orWhereHas("users", (userBuilder) => {
+            userBuilder.where("user_id", user.id);
+          });
+      });
+    });
+  });
+
   @column({ isPrimary: true })
   public id: string;
 
@@ -42,8 +57,13 @@ export default class Deck extends BaseModel {
   })
   public cards: HasMany<typeof Card>;
 
-  @hasMany(() => Rating)
-  public ratings: HasMany<typeof Rating>;
+  @manyToMany(() => User, {
+    pivotTable: "ratings",
+    pivotColumns: ["vote"],
+  })
+  public ratings: ManyToMany<typeof User>;
+
+  public computedRatings: { vote: number; count: number };
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
@@ -54,5 +74,13 @@ export default class Deck extends BaseModel {
   @beforeCreate()
   public static assignUuid(deck: Deck) {
     deck.id = uuid();
+  }
+
+  public serializeExtras() {
+    return {
+      votes: {
+        number: this.$extras.votes,
+      },
+    };
   }
 }

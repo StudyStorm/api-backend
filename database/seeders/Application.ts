@@ -65,11 +65,6 @@ export default class extends BaseSeeder {
                     .merge({
                       creatorId: faker.helpers.arrayElement(classroom.users).id,
                     })
-                    .with("ratings", faker.datatype.number(1), (rating) => {
-                      rating.merge({
-                        userId: faker.helpers.arrayElement(classroom.users).id,
-                      });
-                    })
                     // in each deck, generate 0 to 4 cards
                     .with("cards", faker.datatype.number(4), (card) => {
                       card.with(

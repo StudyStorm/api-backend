@@ -6,7 +6,7 @@ import { RootFolderFactory } from "Database/factories/RootFolderFactory";
 export const ClassroomFactory = Factory.define(
   Classroom,
   async ({ faker }) => ({
-    name: faker.word.noun(),
+    name: faker.lorem.slug(3),
     visibility: faker.helpers.arrayElement(Object.values(ClassroomVisibility)),
   })
 )

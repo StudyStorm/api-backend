@@ -128,10 +128,13 @@ export default class ClassroomsController {
 
     await bouncer.with("ClassroomPolicy").authorize("owner", classroom);
 
-    const user = await User.findByOrFail("email", payload.email);
+    const user = await classroom
+      .related("users")
+      .query()
+      .where("email", payload.email)
+      .first();
 
-    await classroom.load("users");
-    if (!classroom.users.map((u) => u.id).includes(user.id)) {
+    if (!user) {
       return response.badRequest({
         message: "User is not in the classroom",
       });

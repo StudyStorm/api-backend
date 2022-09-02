@@ -87,6 +87,49 @@ Route.group(() => {
       );
     }).prefix("folders");
 
+    // Decks
+    Route.group(() => {
+      Route.get("", "DecksController.index");
+      Route.get("/:id", "DecksController.show").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.patch("/:id", "DecksController.update").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/:id", "DecksController.destroy").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.post(":id/rate", "DecksController.rate").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.get(":id/rate", "DecksController.getRating").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete(":id/rate", "DecksController.deleteRating").where(
+        "id",
+        Route.matchers.uuid()
+      );
+
+      Route.post("/cards", "DecksController.addCard");
+      Route.post("/cards/:id/report", "DecksController.reportCard").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.patch("/cards/:id", "DecksController.updateCard").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/cards/:id", "DecksController.destroyCard").where(
+        "id",
+        Route.matchers.uuid()
+      );
+    }).prefix("decks");
+
     // Profile
     Route.group(() => {
       Route.get("/", "ProfilesController.index");
