@@ -592,74 +592,120 @@ test.group("Decks", (group) => {
     await deck.load("ratings");
     assert.equal(deck.ratings.length, 20);
   });
-});
 
-test("Should not be able to update a card with no write rights", async ({
-  client,
-}) => {
-  const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
-    folder.with("decks", 1, (deck) => deck.with("cards", 4))
-  )
-    .with("users", 1, (user) =>
-      user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+  test("Should not be able to update a card with no write rights", async ({
+    client,
+  }) => {
+    const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
+      folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
-    .apply("public")
-    .create();
+      .with("users", 1, (user) =>
+        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+      )
+      .apply("public")
+      .create();
 
-  const content = {
-    question: "Test question",
-    answers: [
-      {
-        label: "A",
-        isTheAnswer: false,
-      },
-      {
-        label: "B",
-        isTheAnswer: true,
-      },
-    ],
-    type: "test",
-  };
+    const content = {
+      question: "Test question",
+      answers: [
+        {
+          label: "A",
+          isTheAnswer: false,
+        },
+        {
+          label: "B",
+          isTheAnswer: true,
+        },
+      ],
+      type: "test",
+    };
 
-  const response = await client
-    .patch(`v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}`)
-    .json(content)
-    .loginAs(classroom.users[0]);
+    const response = await client
+      .patch(`v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}`)
+      .json(content)
+      .loginAs(classroom.users[0]);
 
-  response.assertStatus(403);
-});
+    response.assertStatus(403);
+  });
 
-test("Should be able to delete a card", async ({ client }) => {
-  const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
-    folder.with("decks", 1, (deck) => deck.with("cards", 4))
-  )
-    .with("users", 1, (user) =>
-      user.pivotAttributes({ access_right: ClassroomAccessRight.RWD })
+  test("Should be able to delete a card", async ({ client }) => {
+    const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
+      folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
-    .apply("public")
-    .create();
-  const response = await client
-    .delete(`v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}`)
-    .loginAs(classroom.users[0]);
+      .with("users", 1, (user) =>
+        user.pivotAttributes({ access_right: ClassroomAccessRight.RWD })
+      )
+      .apply("public")
+      .create();
+    const response = await client
+      .delete(`v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}`)
+      .loginAs(classroom.users[0]);
 
-  response.assertStatus(200);
-  response.assertBodyContains({ message: "Card deleted successfully" });
-});
+    response.assertStatus(200);
+    response.assertBodyContains({ message: "Card deleted successfully" });
+  });
 
-test("Should not be able to delete a card with no delete rights", async ({
-  client,
-}) => {
-  const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
-    folder.with("decks", 1, (deck) => deck.with("cards", 4))
-  )
-    .with("users", 1, (user) =>
-      user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+  test("Should not be able to delete a card with no delete rights", async ({
+    client,
+  }) => {
+    const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
+      folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
-    .apply("public")
-    .create();
-  const response = await client
-    .delete(`v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}`)
-    .loginAs(classroom.users[0]);
+      .with("users", 1, (user) =>
+        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+      )
+      .apply("public")
+      .create();
+    const response = await client
+      .delete(`v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}`)
+      .loginAs(classroom.users[0]);
 
-  response.assertStatus(403);
+    response.assertStatus(403);
+  });
+
+  test("Should be able to report a card", async ({ client }) => {
+    const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
+      folder.with("decks", 1, (deck) => deck.with("cards", 4))
+    )
+      .with("users", 1, (user) =>
+        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+      )
+      .apply("public")
+      .create();
+    const response = await client
+      .post(
+        `v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}/report`
+      )
+      .json({
+        message: "test",
+      })
+      .loginAs(classroom.users[0]);
+
+    response.assertStatus(201);
+    response.assertBodyContains({ message: "test" });
+  });
+
+  test("Should not be able to report a card with no rights to see the deck", async ({
+    client,
+  }) => {
+    const unauthorizedUser = await UserFactory.create();
+    const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
+      folder.with("decks", 1, (deck) => deck.with("cards", 4))
+    )
+      .with("users", 1, (user) =>
+        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+      )
+      .apply("private")
+      .create();
+    const response = await client
+      .post(
+        `v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}/report`
+      )
+      .json({
+        message: "test",
+      })
+      .loginAs(unauthorizedUser);
+
+    response.assertStatus(403);
+  });
 });

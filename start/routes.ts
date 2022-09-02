@@ -116,6 +116,10 @@ Route.group(() => {
       );
 
       Route.post("/cards", "DecksController.addCard");
+      Route.post("/cards/:id/report", "DecksController.reportCard").where(
+        "id",
+        Route.matchers.uuid()
+      );
       Route.patch("/cards/:id", "DecksController.updateCard").where(
         "id",
         Route.matchers.uuid()

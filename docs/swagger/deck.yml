@@ -124,7 +124,7 @@
     tags:
       - Decks
     security: []
-    description: Update a card to a deck
+    description: Update a card of a deck
     parameters:
       - in:  query
         name: id
@@ -172,7 +172,7 @@
     tags:
       - Decks
     security: []
-    description: Delete a card to a deck
+    description: Delete a card of a deck
     parameters:
     - in:  query
       name: id
@@ -192,4 +192,115 @@
         description: Forbidden
       404:
         description: Not Found
-
+/v1/decks/cards/report/{id}:
+  post:
+    tags:
+      - Decks
+    security: []
+    description: Report a card of a deck
+    parameters:
+      - in:  query
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            message:
+              type: string
+              required: true
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+/v1/decks/{id}/rate:
+  post:
+    tags:
+      - Decks
+    security: []
+    description: Rate a deck
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            vote:
+              type: number
+              enum: [1, -1]
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+  get:
+    tags:
+      - Decks
+    security: []
+    description: Get a deck's rating
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+  delete:
+    tags:
+      - Decks
+    security: []
+    description: Delete a deck's rating
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found

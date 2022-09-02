@@ -148,6 +148,33 @@ export default class DecksController {
     return response.ok({ message: "Card deleted successfully" });
   }
 
+  public async reportCard({
+    request,
+    response,
+    params,
+    bouncer,
+    auth,
+  }: HttpContextContract) {
+    const card = await Card.findOrFail(params.id);
+
+    const payload = await request.validate({
+      schema: schema.create({
+        message: schema.string(),
+      }),
+    });
+
+    await card.load("deck");
+    await bouncer.with("DeckPolicy").authorize("read", card.deck, bouncer);
+
+    const { id, message } = await card.related("reports").create({
+      message: payload.message,
+      authorId: auth.user!.id,
+      cardId: card.id,
+    });
+
+    return response.created({ id, message });
+  }
+
   private async computeRating(deck: Deck) {
     const { sum, count } = await deck
       .related("ratings")
