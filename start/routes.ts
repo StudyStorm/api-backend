@@ -136,5 +136,22 @@ Route.group(() => {
       Route.patch("/", "ProfilesController.update");
       Route.delete("/", "ProfilesController.destroy");
     }).prefix("profile");
+
+    // Inbox
+    Route.group(() => {
+      Route.get("/", "InboxesController.index");
+      Route.get("/:id", "InboxesController.show").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.patch("/:id", "InboxesController.update").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/:id", "InboxesController.destroy").where(
+        "id",
+        Route.matchers.uuid()
+      );
+    }).prefix("inbox");
   }).middleware("auth");
 }).prefix("v1");

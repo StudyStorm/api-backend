@@ -103,11 +103,14 @@ export default class ClassroomsController {
 
     const user = await User.findByOrFail("email", payload.email);
 
-    await classroom
-      .related("users")
-      .pivotQuery()
-      .wherePivot("user_id", user.id)
-      .update("access_right", payload.accessRight);
+    await classroom.related("users").sync(
+      {
+        [user.id]: {
+          access_right: payload.accessRight,
+        },
+      },
+      false
+    );
 
     return response.ok({
       message: "User updated successfully",

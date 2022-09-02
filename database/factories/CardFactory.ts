@@ -1,6 +1,7 @@
 import Card from "App/Models/Card";
 import Factory from "@ioc:Adonis/Lucid/Factory";
 import { ReportFactory } from "Database/factories/ReportFactory";
+import { DeckFactory } from "Database/factories/DeckFactory";
 
 export const CardFactory = Factory.define(Card, ({ faker }) => ({
   content: {
@@ -16,4 +17,5 @@ export const CardFactory = Factory.define(Card, ({ faker }) => ({
   },
 }))
   .relation("reports", () => ReportFactory)
+  .relation("deck", () => DeckFactory)
   .build();
