@@ -59,4 +59,5 @@ export const { policies } = Bouncer.registerPolicies({
   FolderPolicy: () => import("App/Policies/FolderPolicy"),
   DeckPolicy: () => import("App/Policies/DeckPolicy"),
   ReportPolicy: () => import("App/Policies/ReportPolicy"),
+  UserPolicy: () => import("App/Policies/UserPolicy"),
 });

@@ -14,5 +14,6 @@ export const UserFactory = Factory.define(User, ({ faker }) => {
   };
 })
   .state("verified", (user) => (user.isEmailVerified = true))
+  .state("unverified", (user) => (user.isEmailVerified = false))
   .relation("classrooms", () => ClassroomFactory)
   .build();
