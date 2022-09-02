@@ -184,6 +184,7 @@ test.group("Decks", (group) => {
 
     response.assertBodyContains({
       id: accessibleClassroom.rootFolder.decks[0].id,
+      folder_id: accessibleClassroom.rootFolder.children[0].id,
     });
   });
 

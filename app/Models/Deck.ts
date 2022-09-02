@@ -63,6 +63,8 @@ export default class Deck extends BaseModel {
   })
   public ratings: ManyToMany<typeof User>;
 
+  public computedRatings: { vote: number; count: number };
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
 
@@ -72,5 +74,13 @@ export default class Deck extends BaseModel {
   @beforeCreate()
   public static assignUuid(deck: Deck) {
     deck.id = uuid();
+  }
+
+  public serializeExtras() {
+    return {
+      votes: {
+        number: this.$extras.votes,
+      },
+    };
   }
 }

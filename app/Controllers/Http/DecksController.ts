@@ -15,11 +15,23 @@ export default class DecksController {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);
     const search = request.input("search", "");
+    const orderByTop = request.input("top");
 
-    const decks = await Deck.query()
+    const deckQuery = Deck.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
       .where("name", "like", `%${search}%`)
-      .paginate(page, limit);
+      .withAggregate("ratings", (query) => {
+        query.count("*").as("votes");
+      });
+
+    if (orderByTop) {
+      deckQuery.orderBy("votes", "desc");
+    }
+
+    const decks = await deckQuery.paginate(
+      page,
+      orderByTop ? orderByTop : limit
+    );
 
     return response.ok(decks);
   }
@@ -29,7 +41,11 @@ export default class DecksController {
    */
   public async show({ request, response, bouncer }: HttpContextContract) {
     const deckId = request.param("id");
-    const deck = await Deck.findOrFail(deckId);
+    const deck = await Deck.query(deckId)
+      .withAggregate("ratings", (query) => {
+        query.count("*").as("votes");
+      })
+      .firstOrFail();
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
     await deck.load("cards");
 
@@ -95,7 +111,9 @@ export default class DecksController {
     return response.created(card);
   }
 
-  /* Update a new card to the deck */
+  /**
+   * Update a new card to the deck
+   */
   public async updateCard({
     request,
     response,
@@ -116,7 +134,9 @@ export default class DecksController {
     return response.ok(card);
   }
 
-  // /* Delete a card from the deck */
+  /**
+   * Delete a card from the deck
+   */
   public async destroyCard({ response, params, bouncer }: HttpContextContract) {
     const card = await Card.findOrFail(params.id);
 
@@ -137,7 +157,7 @@ export default class DecksController {
       .count("*")
       .firstOrFail();
     return {
-      vote: parseInt(sum),
+      vote: parseInt(sum) || 0,
       count: parseInt(count),
     };
   }
