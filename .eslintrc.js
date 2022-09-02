@@ -16,5 +16,6 @@ module.exports = {
   rules: {
     "max-len": ["error", { code: 120 }],
     "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
   },
 };

@@ -14,7 +14,7 @@ jobs:
         env:
           POSTGRESQL_USERNAME: user
           POSTGRESQL_PASSWORD: password123
-          POSTGRESQL_DATABASE: studystorm
+          POSTGRESQL_DATABASE: studystorm_test
         ports:
           - 5432:5432
     env:

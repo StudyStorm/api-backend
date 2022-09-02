@@ -1,0 +1,326 @@
+/v1/decks:
+  get:
+    tags:
+      - Decks
+    security: []
+    description: Get all decks
+    parameters:
+      - in:  query
+        name: page
+        type: number
+        required: false
+      - in:  query
+        name: limit
+        type: number
+        required: false
+      - in:  query
+        name: sortBy
+        type: string
+        required: false
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+/v1/decks/{id}:
+  get:
+    tags:
+      - Decks
+    security: []
+    description: Get a deck infos and cards
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  patch:
+    tags:
+      - Decks
+    security: []
+    description: Update a deck's information
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            name:
+              type: string
+            folderId:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  delete:
+    tags:
+      - Decks
+    security: []
+    description: Delete a deck
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+/v1/decks/cards:
+  post:
+    tags:
+      - Decks
+    security: []
+    description: Add a card to a deck
+    parameters:
+      - in:  body
+        required: true
+        schema:
+          properties:
+            deckId:
+              type: string
+              required: true
+            content:
+              type: object
+              required: true
+              properties:
+                question:
+                  type: string
+                  required: true
+                type:
+                  type: string
+                  required: true
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                        required: true
+                      isTheAnswer:
+                        type: boolean
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+/v1/decks/cards/{id}:
+  patch:
+    tags:
+      - Decks
+    security: []
+    description: Update a card of a deck
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            content:
+              type: object
+              required: true
+              properties:
+                question:
+                  type: string
+                  required: true
+                type:
+                  type: string
+                  required: true
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                        required: true
+                      isTheAnswer:
+                        type: boolean
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+  delete:
+    tags:
+      - Decks
+    security: []
+    description: Delete a card of a deck
+    parameters:
+    - in:  path
+      name: id
+      required: true
+      schema:
+        properties:
+          id:
+            type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+/v1/decks/cards/report/{id}:
+  post:
+    tags:
+      - Decks
+    security: []
+    description: Report a card of a deck
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            message:
+              type: string
+              required: true
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+/v1/decks/{id}/rate:
+  post:
+    tags:
+      - Decks
+    security: []
+    description: Rate a deck
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            vote:
+              type: number
+              enum: [1, -1]
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+  get:
+    tags:
+      - Decks
+    security: []
+    description: Get a deck's rating
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+  delete:
+    tags:
+      - Decks
+    security: []
+    description: Delete a deck's rating
+    parameters:
+      - in:  path
+        name: id
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found

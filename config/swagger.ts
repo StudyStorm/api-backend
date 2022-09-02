@@ -1,9 +1,10 @@
 import { SwaggerConfig } from "@ioc:Adonis/Addons/Swagger";
+import Application from "@ioc:Adonis/Core/Application";
 
 export default {
-  uiEnabled: true, //disable or enable swaggerUi route
+  uiEnabled: Application.inDev,
   uiUrl: "docs", // url path to swaggerUI
-  specEnabled: true, //disable or enable swagger.json route
+  specEnabled: Application.inDev,
   specUrl: "/swagger.json",
 
   middleware: [], // middlewares array, for protect your swagger docs and spec endpoints
