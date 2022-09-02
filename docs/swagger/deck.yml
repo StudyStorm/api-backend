@@ -30,6 +30,13 @@
       - Decks
     security: []
     description: Get a deck infos and cards
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
     produces:
       - application/json
     responses:
@@ -45,6 +52,12 @@
     security: []
     description: Update a deck's information
     parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
       - in:  body
         required: true
         schema:
@@ -67,6 +80,13 @@
       - Decks
     security: []
     description: Delete a deck
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
     produces:
       - application/json
     responses:
@@ -126,7 +146,7 @@
     security: []
     description: Update a card of a deck
     parameters:
-      - in:  query
+      - in:  path
         name: id
         required: true
         schema:
@@ -174,7 +194,7 @@
     security: []
     description: Delete a card of a deck
     parameters:
-    - in:  query
+    - in:  path
       name: id
       required: true
       schema:
@@ -199,7 +219,7 @@
     security: []
     description: Report a card of a deck
     parameters:
-      - in:  query
+      - in:  path
         name: id
         required: true
         schema:

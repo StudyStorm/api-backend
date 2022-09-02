@@ -25,9 +25,19 @@ export enum ClassroomAccessRight {
   RW = "read_write",
   RWD = "read_write_delete",
   OWNER = "owner",
+  SUBSCRIBER = "subscriber",
 }
 
 export default class Classroom extends BaseModel {
+  public static joined = scope<typeof Classroom>((query, user: User) => {
+    query.whereHas("users", (builder) => {
+      builder.where("user_id", user.id).andWhere((sub) => {
+        sub
+          .where("visibility", ClassroomVisibility.PUBLIC)
+          .orWhereNot("access_right", ClassroomAccessRight.SUBSCRIBER);
+      });
+    });
+  });
   public static canRead = scope<typeof Classroom>((query, user: User) => {
     query
       .where("visibility", ClassroomVisibility.PUBLIC)
