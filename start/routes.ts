@@ -34,7 +34,7 @@ Route.group(() => {
     Route.post("/register", "AuthController.register");
     Route.post("/verify", "AuthController.verifyEmail").as("verifyEmail");
     Route.post("/forgot-password", "AuthController.forgotPassword");
-    Route.get("/reset-password", "AuthController.resetPassword").as(
+    Route.get("/reset-password", "AuthController.resetPasswordInfo").as(
       "resetPassword"
     );
     Route.post("/reset-password", "AuthController.resetPassword");

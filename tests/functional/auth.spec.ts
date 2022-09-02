@@ -141,13 +141,50 @@ test.group("Auth", (group) => {
 
   test("should reset password", async ({ client, assert }) => {
     const user = await UserFactory.apply("verified").create();
-    const key = Encryption.encrypt(user.id);
-    const response = await client.post("v1/reset-password").qs({ key }).json({
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const response = await client.post("v1/reset-password").json({
+      key,
       password: "new password",
     });
     response.assertStatus(200);
     response.assertBody({ message: "Password successfully reset" });
     await user.refresh();
     assert.isTrue(await Hash.verify(user.password, "new password"));
+  });
+
+  test("should not reset password if already changed", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    await client.post("v1/reset-password").json({
+      key,
+      password: "new password",
+    });
+    const response = await client.post("v1/reset-password").json({
+      key,
+      password: "new password",
+    });
+    response.assertStatus(401);
+    response.assertBody({ message: "Invalid key" });
+  });
+
+  test("should get user email", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const response = await client.get("v1/reset-password").qs({
+      key,
+    });
+    response.assertStatus(200);
+    response.assertBody({ email: user.email });
+  });
+
+  test("should not get user email if invalid key", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    await user.merge({ password: "new password" }).save();
+    const response = await client.get("v1/reset-password").qs({
+      key,
+    });
+    response.assertStatus(401);
+    response.assertBody({ message: "Invalid key" });
   });
 });

@@ -6,6 +6,7 @@ import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
 import Encryption from "@ioc:Adonis/Core/Encryption";
+import { AuthorizationException } from "@adonisjs/bouncer/build/src/Exceptions/AuthorizationException";
 
 export default class AuthController {
   public async login({ request, response, auth }: HttpContextContract) {
@@ -82,12 +83,15 @@ export default class AuthController {
     });
 
     const user = await User.findBy("email", email);
-    if (!user || (await bouncer.forUser(user).with("UserPolicy").denies("verified"))) {
+    if (
+      !user ||
+      (await bouncer.forUser(user).with("UserPolicy").denies("verified"))
+    ) {
       // to avoid spoofing of the email
       return response.ok({ message: "Email sent" });
     }
-
-    const key = Encryption.encrypt(user.id, "24 hours");
+    //if user change password the key becomes invalid
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
 
     const resetPasswordUrl = Route.makeUrl("resetPassword", {
       qs: { key },
@@ -108,44 +112,43 @@ export default class AuthController {
     return response.ok({ message: "Email sent" });
   }
 
-  public async resetPasswordInfo({
+  private async getUserFromToken({
     request,
-    response,
     bouncer,
-  }: HttpContextContract) {
-    const userId = Encryption.decrypt(request.input("key", ""));
-    if (!userId) {
-      return response.badRequest({ message: "Invalid key" });
+  }: HttpContextContract): Promise<User> {
+    const decrypted = Encryption.decrypt<[string, string]>(
+      request.input("key", "")
+    );
+    if (!decrypted) {
+      throw new AuthorizationException("Invalid key", 401);
     }
+    const [userId, password] = decrypted;
     const user = await User.findOrFail(userId);
+    if (user.password !== password) {
+      throw new AuthorizationException("Invalid key", 401);
+    }
     await bouncer.forUser(user).with("UserPolicy").authorize("verified");
-    return response.ok(
+    return user;
+  }
+
+  public async resetPasswordInfo(ctx: HttpContextContract) {
+    const user = await this.getUserFromToken(ctx);
+    return ctx.response.ok(
       user.serialize({
         fields: ["email"],
       })
     );
   }
 
-  public async resetPassword({
-    request,
-    response,
-    bouncer,
-  }: HttpContextContract) {
-    const userId = Encryption.decrypt(request.input("key", ""));
-    if (!userId) {
-      return response.badRequest({ message: "Invalid key" });
-    }
-
-    const { password } = await request.validate({
+  public async resetPassword(ctx: HttpContextContract) {
+    const user = await this.getUserFromToken(ctx);
+    const { password } = await ctx.request.validate({
       schema: schema.create({
         password: schema.string(),
       }),
     });
-    const user = await User.findOrFail(userId);
-    await bouncer.forUser(user).with("UserPolicy").authorize("verified");
-
     await user.merge({ password }).save();
 
-    return response.ok({ message: "Password successfully reset" });
+    return ctx.response.ok({ message: "Password successfully reset" });
   }
 }
