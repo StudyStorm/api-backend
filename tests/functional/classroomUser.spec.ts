@@ -147,7 +147,10 @@ test.group("Classrooms & Users", async (group) => {
     });
   });
 
-  test("successfully delete an user from classroom", async ({ client }) => {
+  test("successfully delete an user from classroom", async ({
+    client,
+    assert,
+  }) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("public")
       .with("users", 2, (users) => {
@@ -157,6 +160,7 @@ test.group("Classrooms & Users", async (group) => {
       })
       .create();
 
+    assert.equal(classroom.users.length, 2);
     const response = await client
       .delete(`v1/classrooms/users`)
       .json({
@@ -169,5 +173,7 @@ test.group("Classrooms & Users", async (group) => {
     response.assertBodyContains({
       message: "User deleted successfully to classroom",
     });
+    await classroom.load("users");
+    assert.equal(classroom.users.length, 1);
   });
 });

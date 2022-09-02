@@ -102,9 +102,28 @@ Route.group(() => {
         "id",
         Route.matchers.uuid()
       );
+      Route.post(":id/rate", "DecksController.rate").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.get(":id/rate", "DecksController.getRating").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete(":id/rate", "DecksController.deleteRating").where(
+        "id",
+        Route.matchers.uuid()
+      );
+
       Route.post("/cards", "DecksController.addCard");
-      Route.patch("/cards", "DecksController.updateCard");
-      Route.delete("/cards", "DecksController.destroyCard");
+      Route.patch("/cards/:id", "DecksController.updateCard").where(
+        "id",
+        Route.matchers.uuid()
+      );
+      Route.delete("/cards/:id", "DecksController.destroyCard").where(
+        "id",
+        Route.matchers.uuid()
+      );
     }).prefix("decks");
 
     // Profile
