@@ -673,7 +673,7 @@ test.group("Decks", (group) => {
       .create();
     const response = await client
       .post(
-        `v1/decks/cards/report/${classroom.rootFolder.decks[0].cards[0].id}`
+        `v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}/report`
       )
       .json({
         message: "test",
@@ -698,7 +698,7 @@ test.group("Decks", (group) => {
       .create();
     const response = await client
       .post(
-        `v1/decks/cards/report/${classroom.rootFolder.decks[0].cards[0].id}`
+        `v1/decks/cards/${classroom.rootFolder.decks[0].cards[0].id}/report`
       )
       .json({
         message: "test",
