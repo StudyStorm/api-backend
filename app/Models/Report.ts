@@ -5,12 +5,21 @@ import {
   belongsTo,
   BelongsTo,
   column,
+  scope,
 } from "@ioc:Adonis/Lucid/Orm";
 import User from "App/Models/User";
 import { v4 as uuid } from "uuid";
 import Card from "App/Models/Card";
 
 export default class Report extends BaseModel {
+  public static canRead = scope<typeof Report>((query, user: User) => {
+    query.whereHas("card", (cardBuilder) => {
+      cardBuilder.whereHas("deck", (deckBuilder) => {
+        deckBuilder.where("creator_id", user.id);
+      });
+    });
+  });
+
   @column({ isPrimary: true })
   public id: string;
 
