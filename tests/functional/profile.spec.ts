@@ -1,6 +1,7 @@
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
 import User from "App/Models/User";
+import { UserFactory } from "Database/factories/UserFactory";
 
 test.group("Profile", (group) => {
   group.each.setup(async () => {
@@ -20,100 +21,43 @@ test.group("Profile", (group) => {
   });
 
   test("Retrieve connected user's profile", async ({ client }) => {
-    await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-      isEmailVerified: true,
-    });
-
-    const login = await client.post("v1/login").json({
-      email: "test@studystorm.net",
-      password: "test123",
-    });
-
-    const response = await client.get("v1/profile").session(login.session());
+    const user = await UserFactory.apply("verified").create();
+    const response = await client.get("v1/profile").loginAs(user);
 
     response.assertBodyContains({
-      email: "test@studystorm.net",
-      first_name: "Test",
-      last_name: "User",
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
     });
     response.assertStatus(200);
   });
 
   test("Should update user profile", async ({ client }) => {
-    await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-    });
-
-    const login = await client.post("v1/login").json({
-      email: "test@studystorm.net",
-      password: "test123",
-    });
+    const user = await UserFactory.apply("verified").create();
 
     const response = await client
       .patch("v1/profile")
       .json({
+        id: "not-a-uuid",
         firstName: "Testing",
         lastName: "Patch",
+        notExisting: "This should not be updated",
       })
-      .session(login.session());
+      .loginAs(user);
 
     response.assertStatus(200);
     response.assertBodyContains({
+      id: user.id,
       first_name: "Testing",
       last_name: "Patch",
+      email: user.email,
     });
   });
 
-  test("Should not modifiy unspecified keys", async ({ client }) => {
-    await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-    });
-
-    const login = await client.post("v1/login").json({
-      email: "test@studystorm.net",
-      password: "test123",
-    });
-
-    const response = await client
-      .patch("v1/profile")
-      .json({
-        firstName: "Testing",
-        lastName: "Patch",
-      })
-      .session(login.session());
-
+  test("Should delete user account", async ({ client, assert }) => {
+    const user = await UserFactory.apply("verified").create();
+    const response = await client.delete("v1/profile").loginAs(user);
     response.assertStatus(200);
-    response.assertBodyContains({
-      first_name: "Testing",
-      last_name: "Patch",
-      email: "test@studystorm.net",
-    });
-  });
-
-  test("Should delete user account", async ({ client }) => {
-    await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-    });
-
-    const login = await client.post("v1/login").json({
-      email: "test@studystorm.net",
-      password: "test123",
-    });
-
-    const response = await client.delete("v1/profile").session(login.session());
-    response.assertStatus(200);
+    assert.isNull(await User.find(user.id));
   });
 });
