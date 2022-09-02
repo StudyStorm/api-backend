@@ -14,12 +14,20 @@ test.group("Inbox", (group) => {
   test("it should be able to list all the messages", async ({ client }) => {
     await ReportFactory.with("card", 5, (card) => {
       card.with("deck", 1, (deck) => {
-        deck.with("creator", 1);
+        deck.with("creator", 1, (user) => {
+          user.apply("verified");
+        });
       });
     });
-    const deck = await DeckFactory.with("creator")
+    const deck = await DeckFactory.with("creator", 1, (user) => {
+      user.apply("verified");
+    })
       .with("cards", 5, (card) => {
-        card.with("reports", 5, (report) => report.with("author"));
+        card.with("reports", 5, (report) =>
+          report.with("author", 1, (user) => {
+            user.apply("verified");
+          })
+        );
       })
       .create();
     const user = deck.creator;
@@ -36,7 +44,9 @@ test.group("Inbox", (group) => {
   test("it should be able to get a message", async ({ client }) => {
     const report = await ReportFactory.with("card", 5, (card) => {
       card.with("deck", 1, (deck) => {
-        deck.with("creator", 1);
+        deck.with("creator", 1, (user) => {
+          user.apply("verified");
+        });
       });
     }).create();
     const user = report.card.deck.creator;
@@ -49,10 +59,12 @@ test.group("Inbox", (group) => {
   }) => {
     const report = await ReportFactory.with("card", 5, (card) => {
       card.with("deck", 1, (deck) => {
-        deck.with("creator", 1);
+        deck.with("creator", 1, (user) => {
+          user.apply("verified");
+        });
       });
     }).create();
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const response = await client.get(`v1/inbox/${report.id}`).loginAs(user);
     response.assertStatus(403);
   });
@@ -64,7 +76,9 @@ test.group("Inbox", (group) => {
     const report = await ReportFactory.apply("unread")
       .with("card", 5, (card) => {
         card.with("deck", 1, (deck) => {
-          deck.with("creator", 1);
+          deck.with("creator", 1, (user) => {
+            user.apply("verified");
+          });
         });
       })
       .create();
@@ -83,7 +97,9 @@ test.group("Inbox", (group) => {
   test("it should be able to delete a message", async ({ client, assert }) => {
     const report = await ReportFactory.with("card", 5, (card) => {
       card.with("deck", 1, (deck) => {
-        deck.with("creator", 1);
+        deck.with("creator", 1, (user) => {
+          user.apply("verified");
+        });
       });
     }).create();
     const user = report.card.deck.creator;
@@ -98,10 +114,12 @@ test.group("Inbox", (group) => {
   }) => {
     const report = await ReportFactory.with("card", 5, (card) => {
       card.with("deck", 1, (deck) => {
-        deck.with("creator", 1);
+        deck.with("creator", 1, (user) => {
+          user.apply("verified");
+        });
       });
     }).create();
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const response = await client.delete(`v1/inbox/${report.id}`).loginAs(user);
     response.assertStatus(403);
     assert.isNotNull(await Report.find(report.id));

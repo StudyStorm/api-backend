@@ -11,7 +11,7 @@ test.group("Folders", (group) => {
   });
 
   test("get folder content for public classroom", async ({ client }) => {
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("public")
       .create();
@@ -26,7 +26,7 @@ test.group("Folders", (group) => {
   test("cannot get folder content of private folder without right", async ({
     client,
   }) => {
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .create();
@@ -43,7 +43,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.OWNER,
         });
       })
@@ -61,7 +61,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.RW,
         });
       })
@@ -82,7 +82,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.R,
         });
       })
@@ -102,7 +102,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.RWD,
         });
       })
@@ -119,7 +119,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.RW,
         });
       })
@@ -142,7 +142,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.RWD,
         });
       })
@@ -165,7 +165,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.RW,
         });
       })
@@ -192,7 +192,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.R,
         });
       })
@@ -215,7 +215,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.RW,
         });
       })
@@ -236,7 +236,7 @@ test.group("Folders", (group) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("private")
       .with("users", 1, (user) => {
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           access_right: ClassroomAccessRight.R,
         });
       })

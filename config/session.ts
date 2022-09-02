@@ -46,7 +46,7 @@ export default sessionConfig({
   | The name of the cookie that will hold the session id.
   |
   */
-  cookieName: "adonis-session",
+  cookieName: "studystorm-session",
 
   /*
   |--------------------------------------------------------------------------

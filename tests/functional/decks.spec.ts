@@ -28,7 +28,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5)
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("private")
       .create();
@@ -55,7 +57,10 @@ test.group("Decks", (group) => {
     const accessibleClassroom = await ClassroomFactory.with(
       "users",
       1,
-      (user) => user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+      (user) =>
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
     )
       .apply("private")
       .create();
@@ -91,7 +96,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5, (deck) => deck.with("cards", 2))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("private")
       .create();
@@ -117,7 +124,7 @@ test.group("Decks", (group) => {
   test("Should not be able to retrieve a deck that is not accessible", async ({
     client,
   }) => {
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const unaccessible = await ClassroomFactory.with(
       "rootFolder",
       1,
@@ -140,7 +147,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5)
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("private")
       .create();
@@ -164,7 +173,9 @@ test.group("Decks", (group) => {
           .with("decks", 2)
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RWD })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RWD })
       )
       .apply("private")
       .create();
@@ -192,7 +203,7 @@ test.group("Decks", (group) => {
     client,
   }) => {
     // No access
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const unaccessible = await ClassroomFactory.with(
       "rootFolder",
       1,
@@ -215,7 +226,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5, (deck) => deck.with("cards", 2))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("private")
       .create();
@@ -237,7 +250,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5)
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("private")
       .create();
@@ -268,7 +283,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5, (deck) => deck.with("cards", 2))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RWD })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RWD })
       )
       .apply("private")
       .create();
@@ -291,7 +308,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5)
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("private")
       .create();
@@ -302,7 +321,7 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5)
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({
+        user.apply("verified").pivotAttributes({
           user_id: accessibleClassroom.users[0].id,
           access_right: ClassroomAccessRight.RW,
         })
@@ -328,7 +347,7 @@ test.group("Decks", (group) => {
     client,
   }) => {
     // Without any rights
-    const user = await UserFactory.create();
+    const user = await UserFactory.apply("verified").create();
     const unaccessible = await ClassroomFactory.with(
       "rootFolder",
       1,
@@ -350,7 +369,9 @@ test.group("Decks", (group) => {
       (folder) => folder.with("decks", 5, (deck) => deck.with("cards", 2))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("private")
       .create();
@@ -369,7 +390,9 @@ test.group("Decks", (group) => {
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("public")
       .create();
@@ -401,12 +424,14 @@ test.group("Decks", (group) => {
   test("Should not be able to add a card to a deck if no access to deck", async ({
     client,
   }) => {
-    const unauthorizedUser = await UserFactory.create();
+    const unauthorizedUser = await UserFactory.apply("verified").create();
     const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("public")
       .create();
@@ -440,7 +465,9 @@ test.group("Decks", (group) => {
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("public")
       .create();
@@ -482,7 +509,9 @@ test.group("Decks", (group) => {
       )
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("public")
       .create();
@@ -509,7 +538,9 @@ test.group("Decks", (group) => {
       )
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("public")
       .create();
@@ -539,7 +570,9 @@ test.group("Decks", (group) => {
       )
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("public")
       .create();
@@ -573,7 +606,9 @@ test.group("Decks", (group) => {
       )
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("public")
       .create();
@@ -600,7 +635,9 @@ test.group("Decks", (group) => {
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("public")
       .create();
@@ -633,7 +670,9 @@ test.group("Decks", (group) => {
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RWD })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RWD })
       )
       .apply("public")
       .create();
@@ -652,7 +691,9 @@ test.group("Decks", (group) => {
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.RW })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.RW })
       )
       .apply("public")
       .create();
@@ -668,7 +709,9 @@ test.group("Decks", (group) => {
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("public")
       .create();
@@ -688,12 +731,14 @@ test.group("Decks", (group) => {
   test("Should not be able to report a card with no rights to see the deck", async ({
     client,
   }) => {
-    const unauthorizedUser = await UserFactory.create();
+    const unauthorizedUser = await UserFactory.apply("verified").create();
     const classroom = await ClassroomFactory.with("rootFolder", 1, (folder) =>
       folder.with("decks", 1, (deck) => deck.with("cards", 4))
     )
       .with("users", 1, (user) =>
-        user.pivotAttributes({ access_right: ClassroomAccessRight.R })
+        user
+          .apply("verified")
+          .pivotAttributes({ access_right: ClassroomAccessRight.R })
       )
       .apply("private")
       .create();
