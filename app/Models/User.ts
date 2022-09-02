@@ -14,7 +14,6 @@ import { v4 as uuid } from "uuid";
 import Classroom from "./Classroom";
 import Deck from "./Deck";
 import Folder from "./Folder";
-import Rating from "App/Models/Rating";
 import Report from "App/Models/Report";
 
 export default class User extends BaseModel {
@@ -58,8 +57,11 @@ export default class User extends BaseModel {
   })
   public classrooms: ManyToMany<typeof Classroom>;
 
-  @hasMany(() => Rating)
-  public votedDecks: HasMany<typeof Rating>;
+  @manyToMany(() => Deck, {
+    pivotTable: "ratings",
+    pivotColumns: ["vote"],
+  })
+  public votedDecks: ManyToMany<typeof Deck>;
 
   @hasMany(() => Report)
   public reportedCards: HasMany<typeof Report>;

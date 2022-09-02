@@ -2,6 +2,7 @@ import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Deck from "App/Models/Deck";
 import CardsCreationSchema from "App/Schemas/CardsCreationSchema";
 import DecksUpdateSchema from "App/Schemas/DecksUpdateSchema";
+import { schema } from "@ioc:Adonis/Core/Validator";
 
 export default class DecksController {
   /**
@@ -79,4 +80,51 @@ export default class DecksController {
 
   // /* Delete a card from the deck */
   // public async destroyCard({}: HttpContextContract) {}
+
+  private async computeRating(deck: Deck) {
+    const { sum, count } = await deck
+      .related("ratings")
+      .query()
+      .pojo<{ sum: string; count: string }>()
+      .sum("vote")
+      .count("*")
+      .firstOrFail();
+    return {
+      vote: parseInt(sum),
+      count: parseInt(count),
+    };
+  }
+
+  public async rate({ request, bouncer, auth }: HttpContextContract) {
+    const deckId = request.param("id");
+    const deck = await Deck.findOrFail(deckId);
+    await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
+    const { vote } = await request.validate({
+      schema: schema.create({
+        vote: schema.enum([-1, 1] as const),
+      }),
+    });
+    await deck.related("ratings").sync({ [auth.user!.id]: { vote } }, false);
+    return this.computeRating(deck);
+  }
+
+  public async getRating({ request, bouncer }: HttpContextContract) {
+    const deckId = request.param("id");
+    const deck = await Deck.findOrFail(deckId);
+    await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
+    return this.computeRating(deck);
+  }
+
+  public async deleteRating({
+    request,
+    response,
+    bouncer,
+    auth,
+  }: HttpContextContract) {
+    const deckId = request.param("id");
+    const deck = await Deck.findOrFail(deckId);
+    await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
+    await deck.related("ratings").detach([auth.user!.id]);
+    return response.ok({ message: "Rating deleted successfully" });
+  }
 }
