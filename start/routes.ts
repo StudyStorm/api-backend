@@ -29,10 +29,15 @@ Route.get("/", async () => {
 Route.group(() => {
   // Auth
   Route.group(() => {
-    Route.post("/login", "AuthController.login").as("login");
-    Route.post("/logout", "AuthController.logout").as("logout");
-    Route.post("/register", "AuthController.register").as("register");
-    Route.get("/verify", "AuthController.verifyEmail").as("verifyEmail");
+    Route.post("/login", "AuthController.login");
+    Route.post("/logout", "AuthController.logout");
+    Route.post("/register", "AuthController.register");
+    Route.post("/verify", "AuthController.verifyEmail").as("verifyEmail");
+    Route.post("/forgot-password", "AuthController.forgotPassword");
+    Route.get("/reset-password", "AuthController.resetPasswordInfo").as(
+      "resetPassword"
+    );
+    Route.post("/reset-password", "AuthController.resetPassword");
   });
 
   // Authenticated routes

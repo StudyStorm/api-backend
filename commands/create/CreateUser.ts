@@ -41,9 +41,11 @@ export default class CreateUser extends BaseCommand {
           lastName: await this.prompt.ask("Enter last name"),
         },
       });
+      const superAdmin = await this.prompt.confirm("Create super admin?");
       const user = await User.create({
         ...payload,
         isEmailVerified: true,
+        isSuperAdmin: superAdmin,
       });
       this.logger.info(`User created with id ${user.id}`);
     } catch (e) {

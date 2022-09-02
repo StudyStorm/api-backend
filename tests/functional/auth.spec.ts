@@ -1,9 +1,10 @@
 import { test } from "@japa/runner";
 import Mail from "@ioc:Adonis/Addons/Mail";
-import User from "App/Models/User";
 import Database from "@ioc:Adonis/Lucid/Database";
 import Encryption from "@ioc:Adonis/Core/Encryption";
 import Route from "@ioc:Adonis/Core/Route";
+import { UserFactory } from "Database/factories/UserFactory";
+import Hash from "@ioc:Adonis/Core/Hash";
 
 test.group("Auth", (group) => {
   group.each.setup(async () => {
@@ -29,25 +30,31 @@ test.group("Auth", (group) => {
     Mail.restore();
   });
 
-  test("successful login", async ({ assert, client }) => {
-    const user = await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-      isEmailVerified: true,
-    });
-
-    assert.exists(user);
-
+  test("successful login", async ({ client }) => {
+    const user = await UserFactory.apply("verified").make();
+    const password = user.password; // save non-hashed password for later use
+    await user.save();
     const response = await client.post("v1/login").json({
-      email: "test@studystorm.net",
-      password: "test123",
+      email: user.email,
+      password,
     });
 
-    response.assertStatus(201);
+    response.assertStatus(200);
     response.assertBody({
       message: "User successfully logged in",
+    });
+  });
+
+  test("unsuccessful login", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const response = await client.post("v1/login").json({
+      email: user.email,
+      password: "wrong password",
+    });
+
+    response.assertStatus(401);
+    response.assertBody({
+      message: "Invalid credentials",
     });
   });
 
@@ -55,12 +62,7 @@ test.group("Auth", (group) => {
     assert,
     client,
   }) => {
-    const user = await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-    });
+    const user = await UserFactory.apply("unverified").create();
 
     const verifyEmailUrl = Route.makeUrl(
       "verifyEmail",
@@ -69,27 +71,17 @@ test.group("Auth", (group) => {
         qs: { key: Encryption.encrypt(user.id, "24 hours") },
       }
     );
-    assert.exists(user);
-
-    const response = await client.get(verifyEmailUrl);
+    const response = await client.post(verifyEmailUrl);
     response.assertStatus(200);
 
-    const verifiedUser = await User.find(user.id);
-    assert.exists(verifiedUser);
-    assert.isTrue(verifiedUser?.isEmailVerified);
+    await user.refresh();
+    assert.isTrue(user.isEmailVerified);
   });
 
   test("verifyEmail checks if the mail is already verified", async ({
-    assert,
     client,
   }) => {
-    const user = await User.create({
-      email: "test@studystorm.net",
-      password: "test123",
-      firstName: "Test",
-      lastName: "User",
-      isEmailVerified: true,
-    });
+    const user = await UserFactory.apply("verified").create();
 
     const verifyEmailUrl = Route.makeUrl(
       "verifyEmail",
@@ -99,10 +91,100 @@ test.group("Auth", (group) => {
       }
     );
 
-    assert.exists(user);
-
-    const response = await client.get(verifyEmailUrl);
+    const response = await client.post(verifyEmailUrl);
     response.assertStatus(400);
     response.assertBody({ message: "Email already verified" });
+  });
+
+  test("should not work with invalid key", async ({ client }) => {
+    const verifyEmailUrl = Route.makeUrl(
+      "verifyEmail",
+      {},
+      {
+        qs: { key: "invalid key" },
+      }
+    );
+    const response = await client.post(verifyEmailUrl);
+    response.assertStatus(400);
+    response.assertBody({ message: "Invalid key" });
+  });
+
+  test("should not work with expired key", async ({ client }) => {
+    const user = await UserFactory.apply("unverified").create();
+
+    const verifyEmailUrl = Route.makeUrl(
+      "verifyEmail",
+      {},
+      {
+        qs: { key: Encryption.encrypt(user.id, "-24 hours") },
+      }
+    );
+    const response = await client.post(verifyEmailUrl);
+    response.assertStatus(400);
+    response.assertBody({ message: "Invalid key" });
+  });
+
+  test("should send reset password email", async ({ client, assert }) => {
+    const user = await UserFactory.apply("verified").create();
+    const mailer = Mail.fake();
+    const response = await client.post("v1/forgot-password").json({
+      email: user.email,
+    });
+    response.assertStatus(200);
+    assert.isTrue(
+      mailer.exists((mail) => {
+        return mail.subject === "Reset your password";
+      })
+    );
+    Mail.restore();
+  });
+
+  test("should reset password", async ({ client, assert }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const response = await client.post("v1/reset-password").json({
+      key,
+      password: "new password",
+    });
+    response.assertStatus(200);
+    response.assertBody({ message: "Password successfully reset" });
+    await user.refresh();
+    assert.isTrue(await Hash.verify(user.password, "new password"));
+  });
+
+  test("should not reset password if already changed", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    await client.post("v1/reset-password").json({
+      key,
+      password: "new password",
+    });
+    const response = await client.post("v1/reset-password").json({
+      key,
+      password: "new password",
+    });
+    response.assertStatus(401);
+    response.assertBody({ message: "Invalid key" });
+  });
+
+  test("should get user email", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const response = await client.get("v1/reset-password").qs({
+      key,
+    });
+    response.assertStatus(200);
+    response.assertBody({ email: user.email });
+  });
+
+  test("should not get user email if invalid key", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    await user.merge({ password: "new password" }).save();
+    const response = await client.get("v1/reset-password").qs({
+      key,
+    });
+    response.assertStatus(401);
+    response.assertBody({ message: "Invalid key" });
   });
 });
