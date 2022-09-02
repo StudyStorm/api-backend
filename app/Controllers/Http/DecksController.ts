@@ -1,5 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Deck from "App/Models/Deck";
+import Folder from "App/Models/Folder";
 import CardsCreationSchema from "App/Schemas/CardsCreationSchema";
 import DecksUpdateSchema from "App/Schemas/DecksUpdateSchema";
 
@@ -21,12 +22,13 @@ export default class DecksController {
   }
 
   /**
-   * Get the specified deck informations and cards with the
+   * Get the specified deck informations and cards
    */
   public async show({ request, response, bouncer }: HttpContextContract) {
     const deckId = request.param("id");
     const deck = await Deck.findOrFail(deckId);
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
+    await deck.load("cards");
 
     return response.ok(deck);
   }
@@ -34,19 +36,35 @@ export default class DecksController {
   /**
    * Update the specified deck
    */
-  public async update({ request, bouncer }: HttpContextContract) {
+  public async update({ request, response, bouncer }: HttpContextContract) {
     const deckId = request.param("id");
 
     const deck = await Deck.findOrFail(deckId);
     await bouncer.with("DeckPolicy").authorize("write", deck, bouncer);
 
+    const destFolderId = request.body().folderId;
+
+    if (destFolderId && destFolderId !== deck.folderId) {
+      const destFolder = await Folder.findOrFail(destFolderId);
+      await destFolder.load("classroom");
+
+      if (destFolder.classroomId !== deck.folder.classroomId) {
+        return response.forbidden({
+          message: "The destination folder is not in the same classroom",
+        });
+      }
+
+      await bouncer
+        .with("FolderPolicy")
+        .authorize("write", destFolder, bouncer);
+    }
+
     const payload = await request.validate({
       schema: DecksUpdateSchema,
     });
 
-    await deck.merge(payload).save();
-
-    // patch the deck with the id
+    const updatedDeck = await deck.merge(payload).save();
+    response.ok(updatedDeck);
   }
 
   /**
