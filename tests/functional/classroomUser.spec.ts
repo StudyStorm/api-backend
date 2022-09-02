@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { test } from "@japa/runner";
 import Database from "@ioc:Adonis/Lucid/Database";
 import { UserFactory } from "Database/factories/UserFactory";
@@ -122,6 +121,7 @@ test.group("Classrooms & Users", async (group) => {
 
   test("successfully update an user rights for a classroom", async ({
     client,
+    assert,
   }) => {
     const classroom = await ClassroomFactory.with("rootFolder")
       .apply("public")
@@ -145,6 +145,11 @@ test.group("Classrooms & Users", async (group) => {
     response.assertBodyContains({
       message: "User updated successfully",
     });
+    await classroom.load("users");
+    assert.equal(
+      classroom.users[1].$extras.pivot_access_right,
+      ClassroomAccessRight.RWD
+    );
   });
 
   test("successfully delete an user from classroom", async ({ client }) => {
