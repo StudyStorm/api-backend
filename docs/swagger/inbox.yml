@@ -1,0 +1,100 @@
+/v1/inbox:
+  get:
+    tags:
+      - Inbox
+    security: []
+    description: Fetch all reports for a user
+    parameters:
+      - in:  query
+        name: page
+        type: number
+        required: false
+      - in:  query
+        name: limit
+        type: number
+        required: false
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+/v1/inbox/{id}:
+  get:
+    tags:
+      - Inbox
+    security: []
+    description: Get a report by id
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+  patch:
+    tags:
+      - Inbox
+    security: []
+    description: Mark a report as read or unread
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+      - in:  body
+        required: true
+        schema:
+          properties:
+            isRead:
+              type: boolean
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
+      422:
+        description: Unprocessable Entity
+  delete:
+    tags:
+      - Inbox
+    security: []
+    description: Delete a report
+    parameters:
+      - in:  path
+        required: true
+        schema:
+          properties:
+            id:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+      403:
+        description: Forbidden
+      404:
+        description: Not Found
