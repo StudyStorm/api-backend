@@ -25,6 +25,7 @@ export enum ClassroomAccessRight {
   RW = "read_write",
   RWD = "read_write_delete",
   OWNER = "owner",
+  SUBSCRIBER = "subscriber",
 }
 
 export default class Classroom extends BaseModel {

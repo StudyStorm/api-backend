@@ -188,4 +188,53 @@ test.group("Classrooms", async (group) => {
     response.assertStatus(200);
     response.assertBodyContains({ message: "Classroom deleted successfully" });
   });
+
+  test("successfully join a public classroom", async ({ client }) => {
+    const user = await UserFactory.apply("verified").create();
+
+    const classroom = await ClassroomFactory.apply("public").create();
+
+    const response = await client
+      .post(`v1/classrooms/${classroom.id}/join`)
+      .loginAs(user);
+
+    response.assertStatus(200);
+    response.assertBodyContains({ message: "Classroom joined successfully" });
+  });
+
+  test("cannot join a classroom twice", async ({ client }) => {
+    const classroom = await ClassroomFactory.apply("public")
+      .with("users", 1, (user) => {
+        user.apply("verified").pivotAttributes({
+          access_right: ClassroomAccessRight.SUBSCRIBER,
+        });
+      })
+      .create();
+    const user = classroom.users[0];
+    const response = await client
+      .post(`v1/classrooms/${classroom.id}/join`)
+      .loginAs(user);
+    response.assertStatus(422);
+    response.assertBodyContains({
+      message: "user is already in the classroom",
+    });
+  });
+
+  test("successfully leave a classroom", async ({ client }) => {
+    const classroom = await ClassroomFactory.apply("public")
+      .with("users", 1, (user) => {
+        user.apply("verified").pivotAttributes({
+          access_right: ClassroomAccessRight.SUBSCRIBER,
+        });
+      })
+      .create();
+
+    const user = classroom.users[0];
+    const response = await client
+      .post(`v1/classrooms/${classroom.id}/leave`)
+      .loginAs(user);
+
+    response.assertStatus(200);
+    response.assertBodyContains({ message: "Classroom left successfully" });
+  });
 });

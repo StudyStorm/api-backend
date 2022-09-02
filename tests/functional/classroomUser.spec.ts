@@ -92,7 +92,7 @@ test.group("Classrooms & Users", async (group) => {
     });
   });
 
-  test("get 400 error when adding existing user to classroom", async ({
+  test("get 422 error when adding existing user to classroom", async ({
     client,
   }) => {
     const classroom = await ClassroomFactory.with("rootFolder")
@@ -113,7 +113,7 @@ test.group("Classrooms & Users", async (group) => {
       })
       .loginAs(classroom.users[1]);
 
-    response.assertStatus(400);
+    response.assertStatus(422);
     response.assertBodyContains({
       message: "User is already in the classroom",
     });

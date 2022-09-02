@@ -17,9 +17,7 @@ export default class ClassroomsController {
       .paginate(page, limit);
 
     if (classrooms.isEmpty) {
-      return response.status(404).json({
-        message: "No classrooms found",
-      });
+      return response.notFound({ message: "No classrooms found" });
     }
 
     return response.ok(classrooms);
@@ -78,17 +76,25 @@ export default class ClassroomsController {
 
     const user = await User.findByOrFail("email", payload.email);
 
-    await classroom.load("users");
-    if (classroom.users.map((u) => u.id).includes(user.id)) {
-      return response.badRequest({
+    if (
+      await classroom
+        .related("users")
+        .pivotQuery()
+        .where("user_id", user.id)
+        .first()
+    ) {
+      return response.unprocessableEntity({
         message: "User is already in the classroom",
       });
     }
-    await classroom.related("users").attach({
-      [user.id]: {
-        access_right: ClassroomAccessRight.RW,
+    await classroom.related("users").sync(
+      {
+        [user.id]: {
+          access_right: ClassroomAccessRight.RW,
+        },
       },
-    });
+      false
+    );
 
     return response.created({
       message: "User added successfully to classroom",
@@ -135,7 +141,7 @@ export default class ClassroomsController {
       .first();
 
     if (!user) {
-      return response.badRequest({
+      return response.unprocessableEntity({
         message: "User is not in the classroom",
       });
     }
@@ -144,5 +150,40 @@ export default class ClassroomsController {
     return response.ok({
       message: "User deleted successfully to classroom",
     });
+  }
+
+  public async join({ response, params, bouncer, auth }: HttpContextContract) {
+    const classroom = await Classroom.findOrFail(params.id);
+    await bouncer.with("ClassroomPolicy").authorize("onlyPublic", classroom);
+
+    if (
+      await classroom
+        .related("users")
+        .pivotQuery()
+        .where("user_id", auth.user!.id)
+        .first()
+    ) {
+      return response.unprocessableEntity({
+        message: "user is already in the classroom",
+      });
+    }
+
+    await classroom.related("users").sync(
+      {
+        [auth.user!.id]: {
+          access_right: ClassroomAccessRight.SUBSCRIBER,
+        },
+      },
+      false
+    );
+    return response.ok({ message: "Classroom joined successfully" });
+  }
+
+  public async leave({ response, params, auth }: HttpContextContract) {
+    const classroom = await Classroom.findOrFail(params.id);
+    await classroom.related("users").detach([auth.user!.id]);
+    // WARNING: Actually, if the last owner leaves the classroom, the classroom is not deleted
+
+    return response.ok({ message: "Classroom left successfully" });
   }
 }

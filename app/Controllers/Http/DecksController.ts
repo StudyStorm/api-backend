@@ -19,6 +19,7 @@ export default class DecksController {
 
     const deckQuery = Deck.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
+      .withAggregate("ratings", (builder) => builder.avg("vote").as("vote"))
       .where("name", "like", `%${search}%`)
       .withAggregate("ratings", (query) => {
         query.count("*").as("votes");
