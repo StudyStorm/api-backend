@@ -151,6 +151,17 @@ export default class ClassroomsController {
       message: "User deleted successfully to classroom",
     });
   }
+  public async joined({ response, request, auth }: HttpContextContract) {
+    const page = request.input("page", 1);
+    const limit = request.input("limit", 10);
+
+    const classrooms = await Classroom.query()
+      .withScopes((scopes) => scopes.joined(auth.user))
+      .preload("rootFolder")
+      .paginate(page, limit);
+
+    return response.ok(classrooms);
+  }
 
   public async join({ response, params, bouncer, auth }: HttpContextContract) {
     const classroom = await Classroom.findOrFail(params.id);

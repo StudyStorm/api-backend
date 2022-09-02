@@ -29,6 +29,11 @@ export enum ClassroomAccessRight {
 }
 
 export default class Classroom extends BaseModel {
+  public static joined = scope<typeof Classroom>((query, user: User) => {
+    query.orWhereHas("users", (builder) => {
+      builder.where("user_id", user.id);
+    });
+  });
   public static canRead = scope<typeof Classroom>((query, user: User) => {
     query
       .where("visibility", ClassroomVisibility.PUBLIC)

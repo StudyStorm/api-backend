@@ -237,4 +237,32 @@ test.group("Classrooms", async (group) => {
     response.assertStatus(200);
     response.assertBodyContains({ message: "Classroom left successfully" });
   });
+
+  test("successfully get all joined classrooms", async ({ client }) => {
+    const user = await UserFactory.apply("verified")
+      .with("classrooms", 5, (classroom) => {
+        classroom.pivotAttributes({
+          access_right: ClassroomAccessRight.SUBSCRIBER,
+        });
+      })
+      .with("classrooms", 4, (classroom) => {
+        classroom.pivotAttributes({
+          access_right: ClassroomAccessRight.RWD,
+        });
+      })
+      .with("classrooms", 2, (classroom) => {
+        classroom.pivotAttributes({
+          access_right: ClassroomAccessRight.OWNER,
+        });
+      })
+      .create();
+    const response = await client.get("v1/classrooms/joined").loginAs(user);
+    response.assertStatus(200);
+    response.assertBodyContains({
+      meta: {
+        total: 11,
+      },
+      data: [],
+    });
+  });
 });

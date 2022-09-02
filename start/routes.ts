@@ -51,6 +51,7 @@ Route.group(() => {
         .where("id", Route.matchers.uuid())
         .as("destroy");
 
+      Route.get("/joined", "ClassroomsController.joined");
       Route.post("/:id/join", "ClassroomsController.join").where(
         "id",
         Route.matchers.uuid()
