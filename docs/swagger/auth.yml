@@ -19,6 +19,8 @@
     responses:
       200:
         description: Success
+      403:
+        description: Forbidden
 /v1/logout:
   post:
     tags:
@@ -156,3 +158,28 @@
         description: Unauthorized
       404:
         description: Not Found
+/v1/resend:
+    post:
+        tags:
+        - Authentication
+        security: []
+        description: Resend verification email
+        parameters:
+        - name: key
+          in:  [query,body]
+          required: true
+          schema:
+            properties:
+              key:
+                type: string
+        produces:
+        - application/json
+        responses:
+          200:
+              description: Success
+          400:
+              description: Bad Request
+          401:
+              description: Unauthorized
+          404:
+              description: Not Found
