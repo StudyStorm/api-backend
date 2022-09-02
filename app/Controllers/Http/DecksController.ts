@@ -1,6 +1,8 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import Card, { CardContent } from "App/Models/Card";
 import Deck from "App/Models/Deck";
 import CardsCreationSchema from "App/Schemas/CardsCreationSchema";
+import CardsUpdateSchema from "App/Schemas/CardsUpdateSchema";
 import DecksUpdateSchema from "App/Schemas/DecksUpdateSchema";
 import { schema } from "@ioc:Adonis/Core/Validator";
 
@@ -75,11 +77,38 @@ export default class DecksController {
     return response.created(card);
   }
 
-  // /* Update a new card to the deck */
-  // public async updateCard({}: HttpContextContract) {}
+  /* Update a new card to the deck */
+  public async updateCard({
+    request,
+    response,
+    params,
+    bouncer,
+  }: HttpContextContract) {
+    const card = await Card.findOrFail(params.id);
+
+    const payload = await request.validate({
+      schema: CardsUpdateSchema,
+    });
+
+    await card.load("deck");
+
+    await bouncer.with("DeckPolicy").authorize("write", card.deck, bouncer);
+
+    await card.merge({ content: payload as CardContent }).save();
+    return response.ok(card);
+  }
 
   // /* Delete a card from the deck */
-  // public async destroyCard({}: HttpContextContract) {}
+  public async destroyCard({ response, params, bouncer }: HttpContextContract) {
+    const card = await Card.findOrFail(params.id);
+
+    await card.load("deck");
+
+    await bouncer.with("DeckPolicy").authorize("delete", card.deck, bouncer);
+
+    await card.delete();
+    return response.ok({ message: "Card deleted successfully" });
+  }
 
   private async computeRating(deck: Deck) {
     const { sum, count } = await deck
