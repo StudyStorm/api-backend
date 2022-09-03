@@ -32,7 +32,8 @@ export default class CreateUser extends BaseCommand {
   public async run() {
     const { default: User } = await import("App/Models/User");
     try {
-      const payload = await validator.validate({
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { profilePicture, ...payload } = await validator.validate({
         schema: UserRegistrationSchema,
         data: {
           email: await this.prompt.ask("Enter email"),
