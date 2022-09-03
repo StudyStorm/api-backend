@@ -19,6 +19,8 @@
     responses:
       200:
         description: Success
+      403:
+        description: Forbidden
 /v1/logout:
   post:
     tags:
@@ -55,3 +57,129 @@
     responses:
       200:
         description: Success
+
+/v1/verify:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Verify
+    parameters:
+      - name: key
+        in:  [query,body]
+        required: true
+        schema:
+          properties:
+            key:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      400:
+        description: Bad Request
+/v1/forgot-password:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Forgot Password
+    parameters:
+      - name: email
+        in:  body
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      400:
+        description: Bad Request
+      401:
+        description: Unauthorized
+/v1/reset-password:
+  post:
+    tags:
+      - Authentication
+    security: []
+    description: Reset Password
+    parameters:
+      - name: key
+        in:  [query,body]
+        required: true
+        schema:
+          properties:
+            key:
+              type: string
+      - name: password
+        in:  body
+        required: true
+        schema:
+          properties:
+            password:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      400:
+        description: Bad Request
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+  get:
+    tags:
+      - Authentication
+    security: []
+    description: Get email of user
+    parameters:
+      - name: key
+        in:  query
+        required: true
+        schema:
+          properties:
+            key:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      400:
+        description: Bad Request
+      401:
+        description: Unauthorized
+      404:
+        description: Not Found
+/v1/resend:
+    post:
+        tags:
+        - Authentication
+        security: []
+        description: Resend verification email
+        parameters:
+        - name: key
+          in:  [query,body]
+          required: true
+          schema:
+            properties:
+              key:
+                type: string
+        produces:
+        - application/json
+        responses:
+          200:
+              description: Success
+          400:
+              description: Bad Request
+          401:
+              description: Unauthorized
+          404:
+              description: Not Found

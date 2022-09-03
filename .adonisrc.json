@@ -6,7 +6,8 @@
     "@adonisjs/repl/build/commands",
     "@adonisjs/lucid/build/commands",
     "adonis5-swagger/build/commands",
-    "@adonisjs/mail/build/commands"
+    "@adonisjs/mail/build/commands",
+    "@adonisjs/bouncer/build/commands"
   ],
   "exceptionHandlerNamespace": "App/Exceptions/Handler",
   "aliases": {
@@ -18,7 +19,8 @@
   "preloads": [
     "./start/routes",
     "./start/kernel",
-    "./start/validator"
+    "./start/validator",
+    "./start/bouncer"
   ],
   "providers": [
     "./providers/AppProvider",
@@ -28,7 +30,8 @@
     "@adonisjs/mail",
     "@adonisjs/auth",
     "@adonisjs/session",
-    "@adonisjs/view"
+    "@adonisjs/view",
+    "@adonisjs/bouncer"
   ],
   "aceProviders": [
     "@adonisjs/repl"

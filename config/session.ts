@@ -46,7 +46,7 @@ export default sessionConfig({
   | The name of the cookie that will hold the session id.
   |
   */
-  cookieName: "adonis-session",
+  cookieName: "studystorm-session",
 
   /*
   |--------------------------------------------------------------------------
@@ -88,6 +88,7 @@ export default sessionConfig({
     path: "/",
     httpOnly: true,
     sameSite: false,
+    domain: Env.get("CLIENT_DOMAIN"),
   },
 
   /*

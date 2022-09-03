@@ -4,13 +4,24 @@ import {
   beforeCreate,
   beforeSave,
   column,
+  HasMany,
+  hasMany,
+  ManyToMany,
+  manyToMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import Hash from "@ioc:Adonis/Core/Hash";
 import { v4 as uuid } from "uuid";
+import Classroom from "./Classroom";
+import Deck from "./Deck";
+import Folder from "./Folder";
+import Report from "App/Models/Report";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
   public id: string;
+
+  @column()
+  public isSuperAdmin: boolean;
 
   @column()
   public email: string;
@@ -25,7 +36,35 @@ export default class User extends BaseModel {
   public lastName: string;
 
   @column()
+  public profilePicture: string;
+
+  @column()
   public isEmailVerified: boolean;
+
+  @hasMany(() => Folder, {
+    localKey: "creatorId",
+  })
+  public folders: HasMany<typeof Folder>;
+
+  @hasMany(() => Deck, {
+    localKey: "creatorId",
+  })
+  public decks: HasMany<typeof Deck>;
+
+  @manyToMany(() => Classroom, {
+    pivotTable: "user_classrooms",
+    pivotColumns: ["access_right"],
+  })
+  public classrooms: ManyToMany<typeof Classroom>;
+
+  @manyToMany(() => Deck, {
+    pivotTable: "ratings",
+    pivotColumns: ["vote"],
+  })
+  public votedDecks: ManyToMany<typeof Deck>;
+
+  @hasMany(() => Report)
+  public reportedCards: HasMany<typeof Report>;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;

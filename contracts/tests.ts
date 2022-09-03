@@ -12,6 +12,7 @@ declare module "@japa/runner" {
     // Extend context
   }
 
+  // eslint-disable-next-line
   interface Test<TestData> {
     // Extend test
   }

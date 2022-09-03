@@ -6,24 +6,26 @@ import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
 import Encryption from "@ioc:Adonis/Core/Encryption";
+import { AuthorizationException } from "@adonisjs/bouncer/build/src/Exceptions/AuthorizationException";
+import UserVerified from "App/Middleware/UserVerified";
 
 export default class AuthController {
-  public async login({ request, response, auth }: HttpContextContract) {
+  public async login({
+    request,
+    response,
+    auth,
+    bouncer,
+  }: HttpContextContract) {
     const { email, password } = await request.validate({
       schema: schema.create({
         email: schema.string({ trim: true }, [rules.email()]),
         password: schema.string(),
       }),
     });
-
-    try {
-      await auth.use("web").attempt(email, password);
-      response.created({
-        message: "User successfully logged in",
-      });
-    } catch {
-      response.badRequest("Invalid credentials");
-    }
+    const user = await auth.use("web").verifyCredentials(email, password);
+    await UserVerified.handle({ bouncer: bouncer, user });
+    await auth.use("web").login(user);
+    response.ok({ message: "User successfully logged in" });
   }
 
   public async logout({ auth, response }: HttpContextContract) {
@@ -31,11 +33,8 @@ export default class AuthController {
     return response.ok({ message: "User successfully logged out" });
   }
 
-  public async register({ request }: HttpContextContract) {
-    const payload = await request.validate({ schema: UserRegistrationSchema });
-    const user = await User.create(payload);
-
-    const key = Encryption.encrypt(user.id, "24 hours");
+  private async sendVerifyEmail(user: User) {
+    const key = Encryption.encrypt(user.id, "24 hours", "verifyEmail");
 
     const verifyEmailUrl = Route.makeUrl(
       "verifyEmail",
@@ -56,14 +55,20 @@ export default class AuthController {
           url: verifyEmailUrl,
         });
     });
+  }
 
-    return {
-      message: "User created successfully",
-    };
+  public async register({ request, response }: HttpContextContract) {
+    const payload = await request.validate({ schema: UserRegistrationSchema });
+    const user = await User.create(payload);
+    await this.sendVerifyEmail(user);
+    return response.created({
+      message: "User created",
+      resendToken: Encryption.encrypt(user.id, "1 hour", "resendToken"),
+    });
   }
 
   public async verifyEmail({ request, response }: HttpContextContract) {
-    const userId = Encryption.decrypt(request.input("key", ""));
+    const userId = Encryption.decrypt(request.input("key", ""), "verifyEmail");
     if (!userId) {
       return response.badRequest({ message: "Invalid key" });
     }
@@ -72,6 +77,101 @@ export default class AuthController {
     if (user.isEmailVerified) {
       return response.badRequest({ message: "Email already verified" });
     }
-    return user.merge({ isEmailVerified: true }).save();
+    await user.merge({ isEmailVerified: true }).save();
+    return response.ok({ message: "Email verified" });
+  }
+
+  public async resendVerifyEmail({ request, response }: HttpContextContract) {
+    const userId = Encryption.decrypt<string>(
+      request.input("key", ""),
+      "resendToken"
+    );
+    if (!userId) {
+      return response.badRequest({ message: "Invalid key" });
+    }
+    const user = await User.findOrFail(userId);
+    await this.sendVerifyEmail(user);
+    return response.ok({ message: "Email sent" });
+  }
+
+  public async forgotPassword({
+    request,
+    response,
+    bouncer,
+  }: HttpContextContract) {
+    const { email } = await request.validate({
+      schema: schema.create({
+        email: schema.string({ trim: true }, [rules.email()]),
+      }),
+    });
+
+    const user = await User.findBy("email", email);
+    if (
+      !user ||
+      (await bouncer.forUser(user).with("UserPolicy").denies("verified"))
+    ) {
+      // to avoid spoofing of the email
+      return response.ok({ message: "Email sent" });
+    }
+    //if user change password the key becomes invalid
+    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+
+    const resetPasswordUrl = Route.makeUrl("resetPassword", {
+      qs: { key },
+      prefixUrl: Env.get("APP_URL"),
+    });
+
+    await Mail.sendLater((message) => {
+      message
+        .from("no_reply@studystorm.net", "StudyStorm Inc.")
+        .subject("Reset your password")
+        .to(user.email)
+        .htmlView("emails/resetPassword", {
+          user,
+          url: resetPasswordUrl,
+        });
+    });
+
+    return response.ok({ message: "Email sent" });
+  }
+
+  private async getUserFromToken({
+    request,
+    bouncer,
+  }: HttpContextContract): Promise<User> {
+    const decrypted = Encryption.decrypt<[string, string]>(
+      request.input("key", "")
+    );
+    if (!decrypted) {
+      throw new AuthorizationException("Invalid key", 401);
+    }
+    const [userId, password] = decrypted;
+    const user = await User.findOrFail(userId);
+    if (user.password !== password) {
+      throw new AuthorizationException("Invalid key", 401);
+    }
+    await bouncer.forUser(user).with("UserPolicy").authorize("verified");
+    return user;
+  }
+
+  public async resetPasswordInfo(ctx: HttpContextContract) {
+    const user = await this.getUserFromToken(ctx);
+    return ctx.response.ok(
+      user.serialize({
+        fields: ["email"],
+      })
+    );
+  }
+
+  public async resetPassword(ctx: HttpContextContract) {
+    const user = await this.getUserFromToken(ctx);
+    const { password } = await ctx.request.validate({
+      schema: schema.create({
+        password: schema.string(),
+      }),
+    });
+    await user.merge({ password }).save();
+
+    return ctx.response.ok({ message: "Password successfully reset" });
   }
 }
