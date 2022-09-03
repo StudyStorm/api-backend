@@ -19,6 +19,7 @@
     "@adonisjs/assembler": "^5.8.1",
     "@japa/preset-adonis": "^1.1.0",
     "@japa/runner": "^2.0.9",
+    "@types/sharp": "^0.30.5",
     "@types/uuid": "^8.3.4",
     "adonis-preset-ts": "^2.1.0",
     "eslint": "^8.22.0",
@@ -43,11 +44,13 @@
     "@adonisjs/session": "^6.4.0",
     "@adonisjs/view": "^6.1.6",
     "adonis5-swagger": "^1.4.1",
+    "axios": "^0.27.2",
     "luxon": "^3.0.1",
     "pg": "^8.8.0",
     "phc-argon2": "^1.1.3",
     "proxy-addr": "^2.0.7",
     "reflect-metadata": "^0.1.13",
+    "sharp": "^0.30.7",
     "source-map-support": "^0.5.21",
     "uuid": "^8.3.2"
   }

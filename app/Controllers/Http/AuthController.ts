@@ -41,7 +41,7 @@ export default class AuthController {
       {},
       {
         qs: { key },
-        prefixUrl: Env.get("APP_URL"),
+        prefixUrl: Env.get("CLIENT_URL"),
       }
     );
 
@@ -58,8 +58,13 @@ export default class AuthController {
   }
 
   public async register({ request, response }: HttpContextContract) {
-    const payload = await request.validate({ schema: UserRegistrationSchema });
+    const { profilePicture, ...payload } = await request.validate({
+      schema: UserRegistrationSchema,
+    });
     const user = await User.create(payload);
+    if (profilePicture) {
+      User.uploadProfilePicture(user, profilePicture).catch(console.error);
+    }
     await this.sendVerifyEmail(user);
     return response.created({
       message: "User created",
@@ -118,7 +123,7 @@ export default class AuthController {
 
     const resetPasswordUrl = Route.makeUrl("resetPassword", {
       qs: { key },
-      prefixUrl: Env.get("APP_URL"),
+      prefixUrl: Env.get("CLIENT_URL"),
     });
 
     await Mail.sendLater((message) => {

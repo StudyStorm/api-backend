@@ -31,7 +31,8 @@
     "@adonisjs/auth",
     "@adonisjs/session",
     "@adonisjs/view",
-    "@adonisjs/bouncer"
+    "@adonisjs/bouncer",
+    "@adonisjs/drive-s3"
   ],
   "aceProviders": [
     "@adonisjs/repl"
