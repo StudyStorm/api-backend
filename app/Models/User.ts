@@ -4,6 +4,7 @@ import {
   beforeCreate,
   beforeSave,
   column,
+  computed,
   HasMany,
   hasMany,
   ManyToMany,
@@ -15,12 +16,17 @@ import Classroom from "./Classroom";
 import Deck from "./Deck";
 import Folder from "./Folder";
 import Report from "App/Models/Report";
+import Route from "@ioc:Adonis/Core/Route";
+import Env from "@ioc:Adonis/Core/Env";
+import { MultipartFileContract } from "@ioc:Adonis/Core/BodyParser";
+import sharp from "sharp";
+import Drive from "@ioc:Adonis/Core/Drive";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
   public id: string;
 
-  @column()
+  @column({ serializeAs: null })
   public isSuperAdmin: boolean;
 
   @column()
@@ -35,10 +41,10 @@ export default class User extends BaseModel {
   @column()
   public lastName: string;
 
-  @column()
+  @column({ serializeAs: null })
   public profilePicture: string;
 
-  @column()
+  @column({ serializeAs: null })
   public isEmailVerified: boolean;
 
   @hasMany(() => Folder, {
@@ -71,6 +77,25 @@ export default class User extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @computed()
+  public get picture_url() {
+    return Route.makeUrl(
+      "profilePicture",
+      { id: this.id },
+      { prefixUrl: Env.get("APP_URL") }
+    );
+  }
+
+  public static async uploadProfilePicture(
+    user: User,
+    file: MultipartFileContract
+  ) {
+    const buffer = await sharp(file.tmpPath).resize(200, 200).toBuffer();
+    const filePath = `data_user/${user.id}/avatar.png`;
+    await Drive.put(filePath, buffer);
+    await user.merge({ profilePicture: filePath }).save();
+  }
 
   @beforeSave()
   public static async hashPassword(user: User) {

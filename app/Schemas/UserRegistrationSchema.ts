@@ -5,6 +5,10 @@ export default schema.create({
     rules.email(),
     rules.unique({ table: "users", column: "email" }),
   ]),
+  profilePicture: schema.file.optional({
+    size: "2mb",
+    extnames: ["jpg", "png", "gif"],
+  }),
   password: schema.string([rules.minLength(6)]),
   firstName: schema.string({ trim: true }, [rules.capitalize()]),
   lastName: schema.string({ trim: true }, [rules.capitalize()]),

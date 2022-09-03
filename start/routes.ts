@@ -152,6 +152,9 @@ Route.group(() => {
       Route.get("/", "ProfilesController.index");
       Route.patch("/", "ProfilesController.update");
       Route.delete("/", "ProfilesController.destroy");
+      Route.get(":id/avatar", "ProfilesController.profilePicture")
+        .where("id", Route.matchers.uuid())
+        .as("profilePicture");
     }).prefix("profile");
 
     // Inbox
