@@ -20,6 +20,8 @@ export default Env.rules({
   APP_KEY: Env.schema.string(),
   APP_NAME: Env.schema.string(),
   APP_URL: Env.schema.string({ format: "url", tld: false, protocol: false }),
+  CLIENT_URL: Env.schema.string({ format: "url", tld: false, protocol: false }),
+  CLIENT_DOMAIN: Env.schema.string({ format: "host" }),
   DRIVE_DISK: Env.schema.enum(["local", "s3"] as const),
   NODE_ENV: Env.schema.enum(["development", "production", "test"] as const),
 
