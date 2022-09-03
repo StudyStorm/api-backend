@@ -33,6 +33,7 @@ Route.group(() => {
     Route.post("/logout", "AuthController.logout");
     Route.post("/register", "AuthController.register");
     Route.post("/verify", "AuthController.verifyEmail").as("verifyEmail");
+    Route.post("/resend", "AuthController.resendVerifyEmail");
     Route.post("/forgot-password", "AuthController.forgotPassword");
     Route.get("/reset-password", "AuthController.resetPasswordInfo").as(
       "resetPassword"
@@ -169,5 +170,5 @@ Route.group(() => {
         Route.matchers.uuid()
       );
     }).prefix("inbox");
-  }).middleware("auth");
+  }).middleware(["auth", "verified"]);
 }).prefix("v1");

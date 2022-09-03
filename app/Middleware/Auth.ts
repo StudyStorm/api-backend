@@ -1,7 +1,6 @@
 import { GuardsList } from "@ioc:Adonis/Addons/Auth";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { AuthenticationException } from "@adonisjs/auth/build/standalone";
-import UnVerifiedException from "App/Exceptions/UnVerifiedException";
 
 /**
  * Auth middleware is meant to restrict un-authenticated access to a given route
@@ -65,7 +64,7 @@ export default class AuthMiddleware {
    * Handle request
    */
   public async handle(
-    { auth, bouncer }: HttpContextContract,
+    { auth }: HttpContextContract,
     next: () => Promise<void>,
     customGuards: (keyof GuardsList)[]
   ) {
@@ -75,15 +74,6 @@ export default class AuthMiddleware {
      */
     const guards = customGuards.length ? customGuards : [auth.name];
     await this.authenticate(auth, guards);
-
-    if (await bouncer.with("UserPolicy").denies("verified")) {
-      throw new UnVerifiedException(
-        "User not verified",
-        401,
-        "E_UNVERIFIED_USER"
-      );
-    }
-
     await next();
   }
 }

@@ -11,6 +11,33 @@ test.group("Auth", (group) => {
     await Database.beginGlobalTransaction();
     return () => Database.rollbackGlobalTransaction();
   });
+  test("should got an 403 error if not verified when login", async ({
+    client,
+  }) => {
+    const user = await UserFactory.apply("unverified").make();
+    const password = user.password; // save non-hashed password for later use
+    await user.save();
+    const response = await client.post("v1/login").json({
+      email: user.email,
+      password,
+    });
+    response.assertStatus(403);
+    response.assertBodyContains({
+      message: "User is not verified",
+      resendToken: String,
+    });
+  });
+
+  test("should got an 403 error if not verified", async ({ client }) => {
+    const user = await UserFactory.apply("unverified").create();
+    const response = await client.get("v1/profile").loginAs(user);
+    response.assertStatus(403);
+    response.assertBodyContains({
+      message: "User is not verified",
+      resendToken: String,
+    });
+  });
+
   test("mail sent when registering user", async ({ assert, client }) => {
     const mailer = Mail.fake();
 
@@ -52,10 +79,7 @@ test.group("Auth", (group) => {
       password: "wrong password",
     });
 
-    response.assertStatus(401);
-    response.assertBody({
-      message: "Invalid credentials",
-    });
+    response.assertStatus(400);
   });
 
   test("verifyEmail makes new user email as verified", async ({
@@ -68,7 +92,7 @@ test.group("Auth", (group) => {
       "verifyEmail",
       {},
       {
-        qs: { key: Encryption.encrypt(user.id, "24 hours") },
+        qs: { key: Encryption.encrypt(user.id, "24 hours", "verifyEmail") },
       }
     );
     const response = await client.post(verifyEmailUrl);
@@ -87,7 +111,7 @@ test.group("Auth", (group) => {
       "verifyEmail",
       {},
       {
-        qs: { key: Encryption.encrypt(user.id, "24 hours") },
+        qs: { key: Encryption.encrypt(user.id, "24 hours", "verifyEmail") },
       }
     );
 
@@ -116,7 +140,7 @@ test.group("Auth", (group) => {
       "verifyEmail",
       {},
       {
-        qs: { key: Encryption.encrypt(user.id, "-24 hours") },
+        qs: { key: Encryption.encrypt(user.id, "-24 hours", "verifyEmail") },
       }
     );
     const response = await client.post(verifyEmailUrl);
@@ -186,5 +210,24 @@ test.group("Auth", (group) => {
     });
     response.assertStatus(401);
     response.assertBody({ message: "Invalid key" });
+  });
+
+  test("should resent verification email", async ({ client, assert }) => {
+    const mailer = Mail.fake();
+    const user = await UserFactory.apply("unverified").create();
+    const { resendToken } = (
+      await client.get("v1/profile").loginAs(user)
+    ).body();
+    assert.exists(resendToken);
+    const response = await client.post("v1/resend").json({
+      key: resendToken,
+    });
+    response.assertStatus(200);
+    assert.isTrue(
+      mailer.exists((mail) => {
+        return mail.subject === "Verify your email";
+      })
+    );
+    Mail.restore();
   });
 });
