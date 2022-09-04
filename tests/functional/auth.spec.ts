@@ -1,10 +1,10 @@
 import { test } from "@japa/runner";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Database from "@ioc:Adonis/Lucid/Database";
-import Encryption from "@ioc:Adonis/Core/Encryption";
 import Route from "@ioc:Adonis/Core/Route";
 import { UserFactory } from "Database/factories/UserFactory";
 import Hash from "@ioc:Adonis/Core/Hash";
+import { PasswordResetToken, VerifyToken } from "App/core/UserToken";
 
 test.group("Auth", (group) => {
   group.each.setup(async () => {
@@ -48,11 +48,14 @@ test.group("Auth", (group) => {
       lastName: "User",
     });
 
-    assert.isTrue(
-      mailer.exists((mail) => {
-        return mail.subject === "Verify your email";
-      })
-    );
+    const mail = mailer.find((mail) => {
+      return mail.subject === "Verify your email";
+    });
+    assert.exists(mail);
+    const match = mail?.html?.match(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/);
+    const key = new URL(match?.[2] ?? "").searchParams.get("key");
+    assert.exists(key);
+    assert.exists(VerifyToken.decryptToken(key!));
 
     Mail.restore();
   });
@@ -92,7 +95,7 @@ test.group("Auth", (group) => {
       "verifyEmail",
       {},
       {
-        qs: { key: Encryption.encrypt(user.id, "24 hours", "verifyEmail") },
+        qs: { key: VerifyToken.createToken(user) },
       }
     );
     const response = await client.post(verifyEmailUrl);
@@ -111,7 +114,7 @@ test.group("Auth", (group) => {
       "verifyEmail",
       {},
       {
-        qs: { key: Encryption.encrypt(user.id, "24 hours", "verifyEmail") },
+        qs: { key: VerifyToken.createToken(user) },
       }
     );
 
@@ -140,7 +143,7 @@ test.group("Auth", (group) => {
       "verifyEmail",
       {},
       {
-        qs: { key: Encryption.encrypt(user.id, "-24 hours", "verifyEmail") },
+        qs: { key: VerifyToken.createToken(user, -1) },
       }
     );
     const response = await client.post(verifyEmailUrl);
@@ -155,17 +158,22 @@ test.group("Auth", (group) => {
       email: user.email,
     });
     response.assertStatus(200);
-    assert.isTrue(
-      mailer.exists((mail) => {
-        return mail.subject === "Reset your password";
-      })
-    );
+
+    const mail = mailer.find((mail) => {
+      return mail.subject === "Reset your password";
+    });
+    assert.exists(mail);
+    const match = mail?.html?.match(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/);
+    const key = new URL(match?.[2] ?? "").searchParams.get("key");
+    assert.exists(key);
+    assert.exists(PasswordResetToken.decryptToken(key!));
+
     Mail.restore();
   });
 
   test("should reset password", async ({ client, assert }) => {
     const user = await UserFactory.apply("verified").create();
-    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const key = PasswordResetToken.createToken(user);
     const response = await client.post("v1/reset-password").json({
       key,
       password: "new password",
@@ -178,7 +186,7 @@ test.group("Auth", (group) => {
 
   test("should not reset password if already changed", async ({ client }) => {
     const user = await UserFactory.apply("verified").create();
-    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const key = PasswordResetToken.createToken(user);
     await client.post("v1/reset-password").json({
       key,
       password: "new password",
@@ -193,7 +201,7 @@ test.group("Auth", (group) => {
 
   test("should get user email", async ({ client }) => {
     const user = await UserFactory.apply("verified").create();
-    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const key = PasswordResetToken.createToken(user);
     const response = await client.get("v1/reset-password").qs({
       key,
     });
@@ -203,7 +211,7 @@ test.group("Auth", (group) => {
 
   test("should not get user email if invalid key", async ({ client }) => {
     const user = await UserFactory.apply("verified").create();
-    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const key = PasswordResetToken.createToken(user);
     await user.merge({ password: "new password" }).save();
     const response = await client.get("v1/reset-password").qs({
       key,
@@ -223,11 +231,14 @@ test.group("Auth", (group) => {
       key: resendToken,
     });
     response.assertStatus(200);
-    assert.isTrue(
-      mailer.exists((mail) => {
-        return mail.subject === "Verify your email";
-      })
-    );
+    const mail = mailer.find((mail) => {
+      return mail.subject === "Verify your email";
+    });
+    assert.exists(mail);
+    const match = mail?.html?.match(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/);
+    const key = new URL(match?.[2] ?? "").searchParams.get("key");
+    assert.exists(key);
+    assert.exists(VerifyToken.decryptToken(key!));
     Mail.restore();
   });
 });

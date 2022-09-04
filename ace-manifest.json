@@ -12,6 +12,18 @@
       "aliases": [],
       "flags": []
     },
+    "generate:user-key": {
+      "settings": {
+        "loadApp": true,
+        "stayAlive": false
+      },
+      "commandPath": "./commands/generate/GenerateUserKey",
+      "commandName": "generate:user-key",
+      "description": "Generate a user key",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    },
     "dump:rcfile": {
       "settings": {},
       "commandPath": "@adonisjs/core/build/commands/DumpRc",

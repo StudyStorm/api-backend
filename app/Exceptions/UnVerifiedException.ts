@@ -1,7 +1,7 @@
 import { Exception } from "@adonisjs/core/build/standalone";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Encryption from "@ioc:Adonis/Core/Encryption";
 import User from "App/Models/User";
+import { ResendToken } from "App/core/UserToken";
 
 /*
 |--------------------------------------------------------------------------
@@ -22,11 +22,7 @@ export default class UnVerifiedException extends Exception {
   public async handle(error: this, { response }: HttpContextContract) {
     return response.forbidden({
       message: error.message,
-      resendToken: Encryption.encrypt(
-        error.user.id,
-        "5 minutes",
-        "resendToken"
-      ),
+      resendToken: ResendToken.createToken(error.user),
     });
   }
 }
