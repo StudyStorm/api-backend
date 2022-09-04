@@ -24,8 +24,6 @@
           properties:
             name:
               type: string
-            email:
-              type: string
             firstName:
               type: string
             lastName:

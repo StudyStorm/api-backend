@@ -22,7 +22,7 @@ export default class UnVerifiedException extends Exception {
   public async handle(error: this, { response }: HttpContextContract) {
     return response.forbidden({
       message: error.message,
-      resendToken: ResendToken.createToken(error.user),
+      resend_token: ResendToken.createToken(error.user),
     });
   }
 }

@@ -7,6 +7,7 @@ import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
 import { AuthorizationException } from "@adonisjs/bouncer/build/src/Exceptions/AuthorizationException";
 import UserVerified from "App/Middleware/UserVerified";
 import {
+  EmailChangeToken,
   PasswordResetToken,
   ResendToken,
   VerifyToken,
@@ -65,7 +66,7 @@ export default class AuthController {
     await this.sendVerifyEmail(user);
     return response.created({
       message: "User created",
-      resendToken: ResendToken.createToken(user),
+      resend_token: ResendToken.createToken(user),
     });
   }
 
@@ -168,5 +169,17 @@ export default class AuthController {
     await user.merge({ password }).save();
 
     return ctx.response.ok({ message: "Password successfully reset" });
+  }
+
+  public async resetEmail({ request, bouncer }: HttpContextContract) {
+    const decrypted = EmailChangeToken.decryptToken(request.input("key", ""));
+    if (!decrypted) {
+      throw new AuthorizationException("Invalid key", 401);
+    }
+    const [userId, email] = decrypted;
+    const user = await User.findOrFail(userId);
+    await bouncer.forUser(user).with("UserPolicy").authorize("verified");
+    await user.merge({ email }).save();
+    return { message: "Email successfully reset" };
   }
 }
