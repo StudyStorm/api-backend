@@ -10,10 +10,7 @@ test.group("ResetEmail", (group) => {
     return () => Database.rollbackGlobalTransaction();
   });
 
-  test("should change email", async ({
-    client,
-    assert,
-  }) => {
+  test("should change email", async ({ client, assert }) => {
     const mailer = Mail.fake();
     const user = await UserFactory.apply("verified").create();
     const newEmail = "new-email@email.com";
