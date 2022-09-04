@@ -32,11 +32,17 @@ export default class ProfilesController {
     const user = await User.findOrFail(params.id);
     if (user.profilePicture) {
       const stream = await Drive.getStream(user.profilePicture);
-      return response.stream(stream);
+      return response
+        .header("content-type", "image/png")
+        .header("cache-control", "public, max-age=3600;")
+        .send(stream);
     } else {
       const defaultUrl = `https://avatars.dicebear.com/api/bottts/${user.id}.svg`;
       const { data } = await axios.get(defaultUrl, { responseType: "stream" });
-      return response.stream(data);
+      return response
+        .header("content-type", "image/svg+xml")
+        .header("cache-control", "public, max-age=3600;")
+        .stream(data);
     }
   }
 }
