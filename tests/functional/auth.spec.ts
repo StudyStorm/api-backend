@@ -223,12 +223,12 @@ test.group("Auth", (group) => {
   test("should resent verification email", async ({ client, assert }) => {
     const mailer = Mail.fake();
     const user = await UserFactory.apply("unverified").create();
-    const { resendToken } = (
+    const { resend_token } = (
       await client.get("v1/profile").loginAs(user)
     ).body();
-    assert.exists(resendToken);
+    assert.exists(resend_token);
     const response = await client.post("v1/resend").json({
-      key: resendToken,
+      key: resend_token,
     });
     response.assertStatus(200);
     const mail = mailer.find((mail) => {

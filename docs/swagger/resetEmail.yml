@@ -1,0 +1,41 @@
+/v1/reset-email:
+  post:
+    tags:
+      - Reset Email
+    security: []
+    description: Reset Email
+    parameters:
+      - name: key
+        in:  [query,body]
+        required: true
+        schema:
+          properties:
+            key:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized
+/v1/profile/reset-email:
+  patch:
+    tags:
+      - Reset Email
+    security: []
+    description: Ask for reset email
+    parameters:
+      - in: body
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized

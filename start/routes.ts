@@ -39,6 +39,7 @@ Route.group(() => {
       "resetPassword"
     );
     Route.post("/reset-password", "AuthController.resetPassword");
+    Route.post("/reset-email", "AuthController.resetEmail");
   });
 
   // Authenticated routes
@@ -151,6 +152,7 @@ Route.group(() => {
     Route.group(() => {
       Route.get("/", "ProfilesController.index");
       Route.patch("/", "ProfilesController.update");
+      Route.patch("/reset-email", "ProfilesController.askResetEmail");
       Route.delete("/", "ProfilesController.destroy");
       Route.get(":id/avatar", "ProfilesController.profilePicture")
         .where("id", Route.matchers.uuid())
