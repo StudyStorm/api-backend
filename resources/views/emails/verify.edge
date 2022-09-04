@@ -1,4 +1,33 @@
-<h1>Almost done, {{ user.firstName }}</h1>
-<p>
-  <a href="{{ url }}">Click here</a> to verify your email address.
-</p>
+<div style="background-color: #f6f7fb; width: 100%; padding: 60px 0; font-family: Open Sans, Arial, Helvetica, sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto;">
+    <div style="border-radius: 8px; background-color: #fff; border-bottom: 3px solid #ebeef5; overflow: hidden;">
+      <img src="https://ik.imagekit.io/studystorm/verify_ddb5-z9Xg.gif" width="100%" alt="Verify your email" />
+      <div style="padding: 0 25px;">
+        <h1 style="font-size: 28px; color: #47505e; font-weight: 600; text-align: center">Verify your email</h1>
+        <div style="font-size: 18px; white-space: pre-line;">
+          {{ user.firstName }}, please verify your email address to complete your registration.
+
+          If you did not create an account, you can ignore this message.
+
+          To verify your email address, please use the secure link below.
+        </div>
+        <div style="padding: 50px 0 40px; text-align: center">
+          <a
+            href="{{ url }}"
+            style="background: #51c57e; color: #fff; text-decoration: none; display: inline-block; padding: 20px 30px; border-radius: 4px; font-family: Open Sans, Arial, Helvetica, sans-serif; text-transform: uppercase;"
+          >
+            Verify my email
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border: 1px solid #e1e7ef; width: 80%; margin: 20px auto;" />
+
+    <p style="font-size: 10px; color: #69778c; white-space: pre-line; text-align: center;">
+      Copyright © 2022 StudyStorm.
+      Route de Cheseaux 1 CH-1401 Yverdon-les-Bains
+      All rights reserved.
+    </p>
+  </div>
+</div>

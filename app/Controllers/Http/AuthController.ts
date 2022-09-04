@@ -1,7 +1,6 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { rules, schema } from "@ioc:Adonis/Core/Validator";
 import User from "App/Models/User";
-import Route from "@ioc:Adonis/Core/Route";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
@@ -36,14 +35,8 @@ export default class AuthController {
   private async sendVerifyEmail(user: User) {
     const key = Encryption.encrypt(user.id, "24 hours", "verifyEmail");
 
-    const verifyEmailUrl = Route.makeUrl(
-      "verifyEmail",
-      {},
-      {
-        qs: { key },
-        prefixUrl: Env.get("CLIENT_URL"),
-      }
-    );
+    const verifyEmailUrl = new URL("/verify", Env.get("CLIENT_URL"));
+    verifyEmailUrl.searchParams.set("key", key);
 
     await Mail.sendLater((message) => {
       message
@@ -52,7 +45,7 @@ export default class AuthController {
         .to(user.email)
         .htmlView("emails/verify", {
           user,
-          url: verifyEmailUrl,
+          url: verifyEmailUrl.toString(),
         });
     });
   }
@@ -121,10 +114,8 @@ export default class AuthController {
     //if user change password the key becomes invalid
     const key = Encryption.encrypt([user.id, user.password], "24 hours");
 
-    const resetPasswordUrl = Route.makeUrl("resetPassword", {
-      qs: { key },
-      prefixUrl: Env.get("CLIENT_URL"),
-    });
+    const resetPasswordUrl = new URL("/reset-password", Env.get("CLIENT_URL"));
+    resetPasswordUrl.searchParams.set("key", key);
 
     await Mail.sendLater((message) => {
       message
@@ -133,7 +124,7 @@ export default class AuthController {
         .to(user.email)
         .htmlView("emails/resetPassword", {
           user,
-          url: resetPasswordUrl,
+          url: resetPasswordUrl.toString(),
         });
     });
 
