@@ -1,13 +1,16 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { rules, schema } from "@ioc:Adonis/Core/Validator";
 import User from "App/Models/User";
-import Route from "@ioc:Adonis/Core/Route";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import UserRegistrationSchema from "App/Schemas/UserRegistrationSchema";
-import Encryption from "@ioc:Adonis/Core/Encryption";
 import { AuthorizationException } from "@adonisjs/bouncer/build/src/Exceptions/AuthorizationException";
 import UserVerified from "App/Middleware/UserVerified";
+import {
+  PasswordResetToken,
+  ResendToken,
+  VerifyToken,
+} from "App/core/UserToken";
 
 export default class AuthController {
   public async login({
@@ -34,16 +37,10 @@ export default class AuthController {
   }
 
   private async sendVerifyEmail(user: User) {
-    const key = Encryption.encrypt(user.id, "24 hours", "verifyEmail");
+    const key = VerifyToken.createToken(user);
 
-    const verifyEmailUrl = Route.makeUrl(
-      "verifyEmail",
-      {},
-      {
-        qs: { key },
-        prefixUrl: Env.get("CLIENT_URL"),
-      }
-    );
+    const verifyEmailUrl = new URL("/verify", Env.get("CLIENT_URL"));
+    verifyEmailUrl.searchParams.set("key", key);
 
     await Mail.sendLater((message) => {
       message
@@ -52,7 +49,7 @@ export default class AuthController {
         .to(user.email)
         .htmlView("emails/verify", {
           user,
-          url: verifyEmailUrl,
+          url: verifyEmailUrl.toString(),
         });
     });
   }
@@ -68,12 +65,12 @@ export default class AuthController {
     await this.sendVerifyEmail(user);
     return response.created({
       message: "User created",
-      resendToken: Encryption.encrypt(user.id, "1 hour", "resendToken"),
+      resendToken: ResendToken.createToken(user),
     });
   }
 
   public async verifyEmail({ request, response }: HttpContextContract) {
-    const userId = Encryption.decrypt(request.input("key", ""), "verifyEmail");
+    const userId = VerifyToken.decryptToken(request.input("key", ""));
     if (!userId) {
       return response.badRequest({ message: "Invalid key" });
     }
@@ -87,10 +84,7 @@ export default class AuthController {
   }
 
   public async resendVerifyEmail({ request, response }: HttpContextContract) {
-    const userId = Encryption.decrypt<string>(
-      request.input("key", ""),
-      "resendToken"
-    );
+    const userId = ResendToken.decryptToken(request.input("key", ""));
     if (!userId) {
       return response.badRequest({ message: "Invalid key" });
     }
@@ -119,12 +113,10 @@ export default class AuthController {
       return response.ok({ message: "Email sent" });
     }
     //if user change password the key becomes invalid
-    const key = Encryption.encrypt([user.id, user.password], "24 hours");
+    const key = PasswordResetToken.createToken(user);
 
-    const resetPasswordUrl = Route.makeUrl("resetPassword", {
-      qs: { key },
-      prefixUrl: Env.get("CLIENT_URL"),
-    });
+    const resetPasswordUrl = new URL("/reset-password", Env.get("CLIENT_URL"));
+    resetPasswordUrl.searchParams.set("key", key);
 
     await Mail.sendLater((message) => {
       message
@@ -133,7 +125,7 @@ export default class AuthController {
         .to(user.email)
         .htmlView("emails/resetPassword", {
           user,
-          url: resetPasswordUrl,
+          url: resetPasswordUrl.toString(),
         });
     });
 
@@ -144,9 +136,7 @@ export default class AuthController {
     request,
     bouncer,
   }: HttpContextContract): Promise<User> {
-    const decrypted = Encryption.decrypt<[string, string]>(
-      request.input("key", "")
-    );
+    const decrypted = PasswordResetToken.decryptToken(request.input("key", ""));
     if (!decrypted) {
       throw new AuthorizationException("Invalid key", 401);
     }
