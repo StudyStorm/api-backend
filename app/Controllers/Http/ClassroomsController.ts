@@ -13,6 +13,7 @@ export default class ClassroomsController {
 
     const classrooms = await Classroom.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
+      .withScopes((scopes) => scopes.getPermissions(auth.user))
       .preload("rootFolder")
       .paginate(page, limit);
 
@@ -30,13 +31,15 @@ export default class ClassroomsController {
     const classroom = await user
       .related("classrooms")
       .create(payload, { access_right: ClassroomAccessRight.OWNER });
-
     classroom.related("rootFolder").create({ name: "root" });
     return response.created({ message: "Classroom created successfully" });
   }
 
-  public async show({ params, bouncer }: HttpContextContract) {
-    const classroom = await Classroom.findOrFail(params.id);
+  public async show({ params, bouncer, auth }: HttpContextContract) {
+    const classroom = await Classroom.query()
+      .withScopes((scopes) => scopes.getPermissions(auth.user))
+      .where("id", params.id)
+      .firstOrFail();
     await bouncer.with("ClassroomPolicy").authorize("read", classroom);
     await classroom.load("rootFolder");
     return classroom;
