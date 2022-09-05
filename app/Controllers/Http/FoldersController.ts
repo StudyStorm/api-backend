@@ -27,10 +27,9 @@ export default class FoldersController {
         query.withScopes((scopes) => scopes.getPermissions(auth.user))
       )
       .firstOrFail();
-    folder.$extras.path = await folder
-      .getDescendantFolders()
-      .select("id", "name")
-      .exec();
+    folder.$extras.path = (
+      await folder.getDescendantFolders().select("id", "name").exec()
+    ).reverse();
     return folder;
   }
 
