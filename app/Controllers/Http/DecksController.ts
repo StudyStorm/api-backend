@@ -22,8 +22,10 @@ export default class DecksController {
       .withAggregate("ratings", (builder) => builder.avg("vote").as("vote"))
       .where("name", "like", `%${search}%`)
       .withAggregate("ratings", (query) => {
+        //todo : use sum instead of count
         query.count("*").as("votes");
-      });
+      })
+      .preload("creator");
 
     if (orderByTop) {
       deckQuery.orderBy("votes", "desc");
@@ -46,9 +48,10 @@ export default class DecksController {
       .withAggregate("ratings", (query) => {
         query.count("*").as("votes");
       })
+      .preload("creator")
+      .preload("cards")
       .firstOrFail();
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
-    await deck.load("cards");
 
     return response.ok(deck);
   }

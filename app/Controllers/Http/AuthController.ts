@@ -163,7 +163,7 @@ export default class AuthController {
     const user = await this.getUserFromToken(ctx);
     const { password } = await ctx.request.validate({
       schema: schema.create({
-        password: schema.string(),
+        password: schema.string([rules.minLength(6)]),
       }),
     });
     await user.merge({ password }).save();

@@ -69,6 +69,7 @@ export default class Classroom extends BaseModel {
     onQuery: (query) => {
       query.whereNull("parent_id");
     },
+    serializeAs: "root_folder",
   })
   public rootFolder: HasOne<typeof Folder>;
 
