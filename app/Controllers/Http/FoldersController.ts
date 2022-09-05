@@ -10,12 +10,27 @@ export default class FoldersController {
    * @param params
    * @param response
    */
-  public async show({ params, bouncer }: HttpContextContract) {
+  public async show({ params, bouncer, auth }: HttpContextContract) {
     const { id } = params;
-    const folder = await Folder.findOrFail(id);
-    await bouncer.with("FolderPolicy").authorize("read", folder, bouncer);
-    await folder.load("children");
-    await folder.load("decks");
+    await bouncer
+      .with("FolderPolicy")
+      .authorize("read", await Folder.findOrFail(id), bouncer);
+
+    const folder = await Folder.query()
+      .where("id", id)
+      .preload("children")
+      .preload("decks", (query) =>
+        query.withScopes((scopes) => scopes.withVotes())
+      )
+      .preload("creator")
+      .preload("classroom", (query) =>
+        query.withScopes((scopes) => scopes.getPermissions(auth.user))
+      )
+      .firstOrFail();
+    folder.$extras.path = await folder
+      .getDescendantFolders()
+      .select("id", "name")
+      .exec();
     return folder;
   }
 

@@ -10,11 +10,11 @@ import {
   HasMany,
   hasOne,
   HasOne,
-  computed,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
 import User from "./User";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 export enum ClassroomVisibility {
   PUBLIC = "public",
@@ -40,6 +40,7 @@ export default class Classroom extends BaseModel {
     });
   });
   public static canRead = scope<typeof Classroom>((query, user: User) => {
+    if (user.isSuperAdmin) return;
     query
       .where("visibility", ClassroomVisibility.PUBLIC)
       .orWhereHas("users", (builder) => {
@@ -47,6 +48,7 @@ export default class Classroom extends BaseModel {
       });
   });
   public static canWrite = scope<typeof Classroom>((query, user: User) => {
+    if (user.isSuperAdmin) return;
     query.whereHas("users", (builder) => {
       builder.where("user_id", user.id).andWhere((sub) => {
         sub
@@ -59,6 +61,15 @@ export default class Classroom extends BaseModel {
 
   public static getPermissions = scope<typeof Classroom>(
     async (query, user: User) => {
+      if (user.isSuperAdmin) {
+        console.log("is super admin");
+        query
+          .select("*")
+          .select(Database.raw("1 as can_write"))
+          .select(Database.raw("1 as can_delete"));
+        console.log(query.toQuery());
+        return;
+      }
       query
         .withAggregate("users", (builder) => {
           builder
@@ -70,7 +81,7 @@ export default class Classroom extends BaseModel {
                 .orWhere("access_right", ClassroomAccessRight.OWNER);
             })
             .count("access_right")
-            .as("canWrite");
+            .as("can_write");
         })
         .withAggregate("users", (builder) => {
           builder
@@ -81,7 +92,7 @@ export default class Classroom extends BaseModel {
                 .orWhere("access_right", ClassroomAccessRight.OWNER);
             })
             .count("access_right")
-            .as("canDelete");
+            .as("can_delete");
         });
     }
   );
@@ -123,11 +134,12 @@ export default class Classroom extends BaseModel {
     classroom.id = uuid();
   }
 
-  @computed()
-  public get permissions() {
+  public serializeExtras() {
     return {
-      write: +this.$extras.canWrite > 0,
-      delete: +this.$extras.canDelete > 0,
+      permissions: {
+        write: +this.$extras.can_write > 0,
+        delete: +this.$extras.can_delete > 0,
+      },
     };
   }
 }

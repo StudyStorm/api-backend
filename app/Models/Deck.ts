@@ -16,9 +16,11 @@ import Card from "./Card";
 import { v4 as uuid } from "uuid";
 import User from "./User";
 import { ClassroomVisibility } from "App/Models/Classroom";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class Deck extends BaseModel {
   public static canRead = scope<typeof Deck>((query, user: User) => {
+    if (user.isSuperAdmin) return;
     query.whereHas("folder", (builder) => {
       builder.whereHas("classroom", (classroomBuilder) => {
         classroomBuilder
@@ -28,6 +30,17 @@ export default class Deck extends BaseModel {
           });
       });
     });
+  });
+
+  public static withVotes = scope<typeof Deck>((query) => {
+    query
+      .select("decks.*")
+      .select(
+        Database.from("ratings")
+          .whereColumn("ratings.deck_id", "decks.id")
+          .select(Database.raw("COALESCE(SUM(ratings.vote), 0)"))
+          .as("votes")
+      );
   });
 
   @column({ isPrimary: true })
@@ -78,9 +91,7 @@ export default class Deck extends BaseModel {
 
   public serializeExtras() {
     return {
-      votes: {
-        number: this.$extras.votes,
-      },
+      votes: +this.$extras.votes,
     };
   }
 }

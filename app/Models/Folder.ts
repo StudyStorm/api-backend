@@ -5,13 +5,14 @@ import {
   belongsTo,
   BelongsTo,
   column,
+  computed,
   HasMany,
   hasMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Deck from "./Deck";
 import User from "./User";
-import Classroom from "./Classroom";
+import Classroom from "App/Models/Classroom";
 
 export default class Folder extends BaseModel {
   @column({ isPrimary: true })
@@ -59,6 +60,11 @@ export default class Folder extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime;
+
+  @computed()
+  public get path() {
+    return this.$extras.path;
+  }
 
   @beforeCreate()
   public static assignUuid(folder: Folder) {
