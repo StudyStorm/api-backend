@@ -66,10 +66,11 @@ export default class User extends BaseModel {
   @manyToMany(() => Deck, {
     pivotTable: "ratings",
     pivotColumns: ["vote"],
+    serializeAs: "voted_decks",
   })
   public votedDecks: ManyToMany<typeof Deck>;
 
-  @hasMany(() => Report)
+  @hasMany(() => Report, { serializeAs: "reported_cards" })
   public reportedCards: HasMany<typeof Report>;
 
   @column.dateTime({ autoCreate: true })

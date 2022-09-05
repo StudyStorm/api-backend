@@ -23,7 +23,8 @@ export default class DecksController {
       .where("name", "like", `%${search}%`)
       .withAggregate("ratings", (query) => {
         query.count("*").as("votes");
-      });
+      })
+      .preload("creator");
 
     if (orderByTop) {
       deckQuery.orderBy("votes", "desc");
