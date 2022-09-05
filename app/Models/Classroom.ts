@@ -10,6 +10,7 @@ import {
   HasMany,
   hasOne,
   HasOne,
+  computed,
 } from "@ioc:Adonis/Lucid/Orm";
 import { v4 as uuid } from "uuid";
 import Folder from "./Folder";
@@ -56,6 +57,35 @@ export default class Classroom extends BaseModel {
     });
   });
 
+  public static getPermissions = scope<typeof Classroom>(
+    async (query, user: User) => {
+      query
+        .withAggregate("users", (builder) => {
+          builder
+            .where("user_id", user.id)
+            .andWhere((sub) => {
+              sub
+                .where("access_right", ClassroomAccessRight.RW)
+                .orWhere("access_right", ClassroomAccessRight.RWD)
+                .orWhere("access_right", ClassroomAccessRight.OWNER);
+            })
+            .count("access_right")
+            .as("canWrite");
+        })
+        .withAggregate("users", (builder) => {
+          builder
+            .where("user_id", user.id)
+            .andWhere((sub) => {
+              sub
+                .orWhere("access_right", ClassroomAccessRight.RWD)
+                .orWhere("access_right", ClassroomAccessRight.OWNER);
+            })
+            .count("access_right")
+            .as("canDelete");
+        });
+    }
+  );
+
   @column({ isPrimary: true })
   public id: string;
 
@@ -91,5 +121,13 @@ export default class Classroom extends BaseModel {
   @beforeCreate()
   public static assignUuid(classroom: Classroom) {
     classroom.id = uuid();
+  }
+
+  @computed()
+  public get permissions() {
+    return {
+      write: +this.$extras.canWrite > 0,
+      delete: +this.$extras.canDelete > 0,
+    };
   }
 }
