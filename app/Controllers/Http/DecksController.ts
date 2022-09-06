@@ -35,7 +35,8 @@ export default class DecksController {
    */
   public async show({ request, response, bouncer }: HttpContextContract) {
     const deckId = request.param("id");
-    const deck = await Deck.query(deckId)
+    const deck = await Deck.query()
+      .where("id", deckId)
       .withAggregate("ratings", (query) => {
         query.count("*").as("votes");
       })
