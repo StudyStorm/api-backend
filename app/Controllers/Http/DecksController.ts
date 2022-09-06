@@ -17,24 +17,15 @@ export default class DecksController {
     const search = request.input("search", "");
     const orderByTop = request.input("top");
 
-    const deckQuery = Deck.query()
+    const decks = await Deck.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
-      .withAggregate("ratings", (builder) => builder.avg("vote").as("vote"))
+      .withScopes((scopes) => scopes.withVotes())
       .where("name", "like", `%${search}%`)
-      .withAggregate("ratings", (query) => {
-        //todo : use sum instead of count
-        query.count("*").as("votes");
+      .preload("creator")
+      .if(!!orderByTop, (query) => {
+        query.orderBy("votes", "desc");
       })
-      .preload("creator");
-
-    if (orderByTop) {
-      deckQuery.orderBy("votes", "desc");
-    }
-
-    const decks = await deckQuery.paginate(
-      page,
-      orderByTop ? orderByTop : limit
-    );
+      .paginate(page, limit);
 
     return response.ok(decks);
   }
