@@ -21,7 +21,7 @@ export default class FoldersController {
       .where("id", id)
       .preload("children")
       .preload("decks", (query) =>
-        query.withScopes((scopes) => scopes.withVotes())
+        query.withScopes((scopes) => scopes.withVotes()).preload("creator")
       )
       .preload("creator")
       .preload("classroom", (query) =>
