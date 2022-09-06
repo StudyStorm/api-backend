@@ -26,7 +26,7 @@ test.group("Classrooms & Users", async (group) => {
       .loginAs(user);
 
     response.assertStatus(200);
-    response.assertBodyContains([]);
+    response.assertBodyContains({ meta: {}, data: [] });
   });
 
   test("get all users from private classroom", async ({ client }) => {
@@ -44,7 +44,7 @@ test.group("Classrooms & Users", async (group) => {
       .loginAs(classroom.users[0]);
 
     response.assertStatus(200);
-    response.assertBodyContains([]);
+    response.assertBodyContains({ meta: {}, data: [] });
   });
 
   test("get 403 error when retrieve users from private classroom", async ({

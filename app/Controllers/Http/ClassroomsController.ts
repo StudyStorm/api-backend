@@ -10,8 +10,11 @@ export default class ClassroomsController {
   public async index({ response, request, auth }: HttpContextContract) {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);
+    const search = request.input("search", "");
 
     const classrooms = await Classroom.query()
+      .where("name", "like", `%${search}%`)
+      .orderBy("name")
       .withScopes((scopes) => scopes.canRead(auth.user))
       .withScopes((scopes) => scopes.getPermissions(auth.user))
       .preload("rootFolder")
@@ -63,12 +66,20 @@ export default class ClassroomsController {
     return response.ok({ message: "Classroom deleted successfully" });
   }
 
-  public async users({ response, bouncer, params }: HttpContextContract) {
+  public async users({ response, bouncer, params, request }: HttpContextContract) {
+    const page = request.input("page", 1);
+    const limit = request.input("limit", 10);
     const classroom = await Classroom.findOrFail(params.id);
     await bouncer.with("ClassroomPolicy").authorize("read", classroom);
-
-    await classroom.load("users");
-    return response.ok(classroom.users);
+    const users = await User.query()
+      .join("user_classrooms", "users.id", "user_classrooms.user_id")
+      .where("user_classrooms.classroom_id", classroom.id)
+      .select("users.*")
+      .select("user_classrooms.access_right")
+      .orderBy("first_name")
+      .orderBy("last_name")
+      .paginate(page, limit);
+    return response.ok(users);
   }
 
   public async addUser({ bouncer, response, request }: HttpContextContract) {
@@ -159,6 +170,7 @@ export default class ClassroomsController {
     const limit = request.input("limit", 10);
 
     const classrooms = await Classroom.query()
+      .orderBy("name")
       .withScopes((scopes) => scopes.joined(auth.user))
       .preload("rootFolder")
       .paginate(page, limit);

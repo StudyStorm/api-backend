@@ -12,9 +12,10 @@ export default class FoldersController {
    */
   public async show({ params, bouncer, auth }: HttpContextContract) {
     const { id } = params;
+    const preTestFolder = await Folder.findOrFail(id);
     await bouncer
       .with("FolderPolicy")
-      .authorize("read", await Folder.findOrFail(id), bouncer);
+      .authorize("read", preTestFolder, bouncer);
 
     const folder = await Folder.query()
       .where("id", id)
