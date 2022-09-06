@@ -40,7 +40,7 @@ export default class ProfilesController {
       return response
         .header("content-type", "image/png")
         .header("cache-control", "public, max-age=3600;")
-        .send(stream);
+        .stream(stream);
     } else {
       const color = hslToHex(...hashToHsl(user.id, 75, 75));
       const { data } = await axios.get(
