@@ -194,14 +194,25 @@ export default class DecksController {
       }),
     });
     await deck.related("ratings").sync({ [auth.user!.id]: { vote } }, false);
-    return this.computeRating(deck);
+    return {
+      ...(await this.computeRating(deck)),
+      user_vote: vote,
+    };
   }
 
-  public async getRating({ request, bouncer }: HttpContextContract) {
+  public async getRating({ request, bouncer, auth }: HttpContextContract) {
     const deckId = request.param("id");
     const deck = await Deck.findOrFail(deckId);
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
-    return this.computeRating(deck);
+    const vote = await deck
+      .related("ratings")
+      .pivotQuery()
+      .where("user_id", auth.user!.id)
+      .first();
+    return {
+      ...(await this.computeRating(deck)),
+      user_vote: vote,
+    };
   }
 
   public async deleteRating({
