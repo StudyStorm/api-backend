@@ -67,10 +67,10 @@ export default class ClassroomsController {
   }
 
   public async users({
+    request,
     response,
     bouncer,
     params,
-    request,
   }: HttpContextContract) {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);

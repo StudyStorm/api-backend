@@ -62,12 +62,10 @@ export default class Classroom extends BaseModel {
   public static getPermissions = scope<typeof Classroom>(
     async (query, user: User) => {
       if (user.isSuperAdmin) {
-        console.log("is super admin");
         query
           .select("*")
           .select(Database.raw("1 as can_write"))
           .select(Database.raw("1 as can_delete"));
-        console.log(query.toQuery());
         return;
       }
       query

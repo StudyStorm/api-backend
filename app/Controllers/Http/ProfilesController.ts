@@ -7,6 +7,7 @@ import { rules, schema } from "@ioc:Adonis/Core/Validator";
 import { EmailChangeToken } from "App/core/UserToken";
 import Env from "@ioc:Adonis/Core/Env";
 import Mail from "@ioc:Adonis/Addons/Mail";
+import { hashToHsl, hslToHex } from "App/core/Color";
 
 export default class ProfilesController {
   public async index({ auth }: HttpContextContract) {
@@ -39,10 +40,19 @@ export default class ProfilesController {
       return response
         .header("content-type", "image/png")
         .header("cache-control", "public, max-age=3600;")
-        .send(stream);
+        .stream(stream);
     } else {
-      const defaultUrl = `https://avatars.dicebear.com/api/bottts/${user.id}.svg`;
-      const { data } = await axios.get(defaultUrl, { responseType: "stream" });
+      const color = hslToHex(...hashToHsl(user.id, 75, 75));
+      const { data } = await axios.get(
+        `https://avatars.dicebear.com/api/bottts/${user.id}.svg`,
+        {
+          params: {
+            scale: 75,
+            b: color,
+          },
+          responseType: "stream",
+        }
+      );
       return response
         .header("content-type", "image/svg+xml")
         .header("cache-control", "public, max-age=3600;")
