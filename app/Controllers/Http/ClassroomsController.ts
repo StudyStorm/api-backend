@@ -66,7 +66,12 @@ export default class ClassroomsController {
     return response.ok({ message: "Classroom deleted successfully" });
   }
 
-  public async users({ response, bouncer, params, request }: HttpContextContract) {
+  public async users({
+    response,
+    bouncer,
+    params,
+    request,
+  }: HttpContextContract) {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);
     const classroom = await Classroom.findOrFail(params.id);
