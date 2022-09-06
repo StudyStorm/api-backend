@@ -9,6 +9,7 @@ export default class InboxesController {
 
     const inboxes = await Report.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
+      .preload("author")
       .paginate(page, limit);
 
     return response.ok(inboxes);
