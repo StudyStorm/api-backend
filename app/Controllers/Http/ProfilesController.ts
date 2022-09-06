@@ -41,7 +41,7 @@ export default class ProfilesController {
         .header("cache-control", "public, max-age=3600;")
         .send(stream);
     } else {
-      const defaultUrl = `https://avatars.dicebear.com/api/bottts/${user.id}.svg`;
+      const defaultUrl = `https://avatars.dicebear.com/api/bottts/${user.id}.svg?scale=75`;
       const { data } = await axios.get(defaultUrl, { responseType: "stream" });
       return response
         .header("content-type", "image/svg+xml")
