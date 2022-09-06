@@ -109,4 +109,11 @@ export default class User extends BaseModel {
   public static assignUuid(user: User) {
     user.id = uuid();
   }
+
+  public serializeExtras() {
+    return {
+      access_right:
+        this.$extras.pivot_access_right ?? this.$extras.access_right,
+    };
+  }
 }

@@ -63,12 +63,23 @@ export default class ClassroomsController {
     return response.ok({ message: "Classroom deleted successfully" });
   }
 
-  public async users({ response, bouncer, params }: HttpContextContract) {
+  public async users({
+    request,
+    response,
+    bouncer,
+    params,
+  }: HttpContextContract) {
+    const page = request.input("page", 1);
+    const limit = request.input("limit", 10);
     const classroom = await Classroom.findOrFail(params.id);
     await bouncer.with("ClassroomPolicy").authorize("read", classroom);
-
-    await classroom.load("users");
-    return response.ok(classroom.users);
+    const users = await User.query()
+      .join("user_classrooms", "users.id", "user_classrooms.user_id")
+      .where("user_classrooms.classroom_id", classroom.id)
+      .select("users.*")
+      .select("user_classrooms.access_right")
+      .paginate(page, limit);
+    return response.ok(users);
   }
 
   public async addUser({ bouncer, response, request }: HttpContextContract) {
