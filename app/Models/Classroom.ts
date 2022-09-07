@@ -41,11 +41,13 @@ export default class Classroom extends BaseModel {
   });
   public static canRead = scope<typeof Classroom>((query, user: User) => {
     if (user.isSuperAdmin) return;
-    query
-      .andWhere("visibility", ClassroomVisibility.PUBLIC)
-      .orWhereHas("users", (builder) => {
-        builder.where("user_id", user.id);
-      });
+    query.andWhere((sub) => {
+      sub
+        .andWhere("visibility", ClassroomVisibility.PUBLIC)
+        .orWhereHas("users", (builder) => {
+          builder.where("user_id", user.id);
+        });
+    });
   });
   public static canWrite = scope<typeof Classroom>((query, user: User) => {
     if (user.isSuperAdmin) return;
