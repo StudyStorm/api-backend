@@ -12,15 +12,16 @@ export default class FoldersController {
    */
   public async show({ params, bouncer, auth }: HttpContextContract) {
     const { id } = params;
+    const preTestFolder = await Folder.findOrFail(id);
     await bouncer
       .with("FolderPolicy")
-      .authorize("read", await Folder.findOrFail(id), bouncer);
+      .authorize("read", preTestFolder, bouncer);
 
     const folder = await Folder.query()
       .where("id", id)
       .preload("children")
       .preload("decks", (query) =>
-        query.withScopes((scopes) => scopes.withVotes())
+        query.withScopes((scopes) => scopes.withVotes()).preload("creator")
       )
       .preload("creator")
       .preload("classroom", (query) =>
@@ -65,11 +66,26 @@ export default class FoldersController {
     });
   }
 
-  public async update({ params, request, bouncer }: HttpContextContract) {
+  public async update({
+    params,
+    request,
+    bouncer,
+    response,
+  }: HttpContextContract) {
     const { id } = params;
     const folder = await Folder.findOrFail(id);
     await bouncer.with("FolderPolicy").authorize("write", folder, bouncer);
     const payload = await request.validate({ schema: FolderUpdateSchema });
+
+    if (payload.parentId) {
+      const newParent = await Folder.findOrFail(payload.parentId);
+      if (newParent.classroomId !== folder.classroomId) {
+        return response.forbidden({
+          message: "Cannot move folder to another classroom",
+        });
+      }
+    }
+
     return folder.merge(payload).save();
   }
 

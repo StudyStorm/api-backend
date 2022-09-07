@@ -20,7 +20,7 @@ export default class DecksController {
     const decks = await Deck.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
       .withScopes((scopes) => scopes.withVotes())
-      .where("name", "like", `%${search}%`)
+      .where("name", "ilike", `%${search}%`)
       .preload("creator")
       .if(!!orderByTop, (query) => {
         query.orderBy("votes", "desc");
@@ -35,12 +35,14 @@ export default class DecksController {
    */
   public async show({ request, response, bouncer }: HttpContextContract) {
     const deckId = request.param("id");
-    const deck = await Deck.query(deckId)
+    const deck = await Deck.query()
+      .where("id", deckId)
       .withAggregate("ratings", (query) => {
         query.count("*").as("votes");
       })
       .preload("creator")
       .preload("cards")
+      .orderBy("createdAt")
       .firstOrFail();
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
 
@@ -56,26 +58,19 @@ export default class DecksController {
     const deck = await Deck.findOrFail(deckId);
     await bouncer.with("DeckPolicy").authorize("write", deck, bouncer);
 
-    const destFolderId = request.body().folderId;
-
-    if (destFolderId && destFolderId !== deck.folderId) {
-      const destFolder = await Folder.findOrFail(destFolderId);
-      await destFolder.load("classroom");
-
-      if (destFolder.classroomId !== deck.folder.classroomId) {
-        return response.forbidden({
-          message: "The destination folder is not in the same classroom",
-        });
-      }
-
-      await bouncer
-        .with("FolderPolicy")
-        .authorize("write", destFolder, bouncer);
-    }
-
     const payload = await request.validate({
       schema: DecksUpdateSchema,
     });
+
+    if (payload.folderId) {
+      await deck.load("folder");
+      const folder = await Folder.findOrFail(payload.folderId);
+      if (folder.classroomId !== deck.folder.classroomId) {
+        return response.forbidden({
+          message: "You can't move a deck to another classroom",
+        });
+      }
+    }
 
     const updatedDeck = await deck.merge(payload).save();
     response.ok(updatedDeck);
@@ -151,12 +146,15 @@ export default class DecksController {
     auth,
   }: HttpContextContract) {
     const card = await Card.findOrFail(params.id);
+    console.log(card);
 
     const payload = await request.validate({
       schema: schema.create({
         message: schema.string(),
       }),
     });
+
+    console.log(payload);
 
     await card.load("deck");
     await bouncer.with("DeckPolicy").authorize("read", card.deck, bouncer);

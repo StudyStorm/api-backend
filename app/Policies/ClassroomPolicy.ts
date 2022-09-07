@@ -11,15 +11,15 @@ export default class ClassroomPolicy extends BasePolicy {
   }
 
   public async onlyPublic(_user: User, classroom: Classroom) {
-    return classroom.visibility === ClassroomVisibility.PUBLIC;
+    return classroom?.visibility === ClassroomVisibility.PUBLIC;
   }
 
   public async onlyPrivate(_user: User, classroom: Classroom) {
-    return classroom.visibility === ClassroomVisibility.PRIVATE;
+    return classroom?.visibility === ClassroomVisibility.PRIVATE;
   }
 
   public async read(user: User, classroom: Classroom) {
-    if (classroom.visibility === ClassroomVisibility.PUBLIC) return true;
+    if (classroom?.visibility === ClassroomVisibility.PUBLIC) return true;
     return !!(await classroom
       ?.related("users")
       .query()

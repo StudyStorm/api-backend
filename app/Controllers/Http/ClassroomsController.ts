@@ -10,16 +10,18 @@ export default class ClassroomsController {
   public async index({ response, request, auth }: HttpContextContract) {
     const page = request.input("page", 1);
     const limit = request.input("limit", 10);
+    const search = request.input("search", "");
 
     const classrooms = await Classroom.query()
+      .where("name", "ilike", `%${search}%`)
+      .orderBy("name")
       .withScopes((scopes) => scopes.canRead(auth.user))
       .withScopes((scopes) => scopes.getPermissions(auth.user))
       .preload("rootFolder")
+      .withCount("users", (query) => {
+        query.as("nb_members");
+      })
       .paginate(page, limit);
-
-    if (classrooms.isEmpty) {
-      return response.notFound({ message: "No classrooms found" });
-    }
 
     return response.ok(classrooms);
   }
@@ -78,6 +80,8 @@ export default class ClassroomsController {
       .where("user_classrooms.classroom_id", classroom.id)
       .select("users.*")
       .select("user_classrooms.access_right")
+      .orderBy("first_name")
+      .orderBy("last_name")
       .paginate(page, limit);
     return response.ok(users);
   }
@@ -170,6 +174,7 @@ export default class ClassroomsController {
     const limit = request.input("limit", 10);
 
     const classrooms = await Classroom.query()
+      .orderBy("name")
       .withScopes((scopes) => scopes.joined(auth.user))
       .preload("rootFolder")
       .paginate(page, limit);
