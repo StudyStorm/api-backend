@@ -65,11 +65,14 @@ export default class Classroom extends BaseModel {
         query
           .select("*")
           .select(Database.raw("1 as can_write"))
-          .select(Database.raw("1 as can_delete"));
+          .select(Database.raw("1 as can_delete"))
+          .withCount("users", (builder) => {
+            builder.where("user_id", user.id).as("is_member");
+          });
         return;
       }
       query
-        .withAggregate("users", (builder) => {
+        .withCount("users", (builder) => {
           builder
             .where("user_id", user.id)
             .andWhere((sub) => {
@@ -78,10 +81,9 @@ export default class Classroom extends BaseModel {
                 .orWhere("access_right", ClassroomAccessRight.RWD)
                 .orWhere("access_right", ClassroomAccessRight.OWNER);
             })
-            .count("access_right")
             .as("can_write");
         })
-        .withAggregate("users", (builder) => {
+        .withCount("users", (builder) => {
           builder
             .where("user_id", user.id)
             .andWhere((sub) => {
@@ -89,8 +91,10 @@ export default class Classroom extends BaseModel {
                 .orWhere("access_right", ClassroomAccessRight.RWD)
                 .orWhere("access_right", ClassroomAccessRight.OWNER);
             })
-            .count("access_right")
             .as("can_delete");
+        })
+        .withCount("users", (builder) => {
+          builder.where("user_id", user.id).as("is_member");
         });
     }
   );
@@ -137,6 +141,7 @@ export default class Classroom extends BaseModel {
       permissions: {
         write: +this.$extras.can_write > 0,
         delete: +this.$extras.can_delete > 0,
+        is_member: +this.$extras.is_member > 0,
       },
       nb_members: +this.$extras.nb_members,
     };
