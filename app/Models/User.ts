@@ -73,10 +73,10 @@ export default class User extends BaseModel {
   @hasMany(() => Report, { serializeAs: "reported_cards" })
   public reportedCards: HasMany<typeof Report>;
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime;
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime;
 
   @computed()
