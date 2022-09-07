@@ -23,10 +23,6 @@ export default class ClassroomsController {
       })
       .paginate(page, limit);
 
-    if (classrooms.isEmpty) {
-      return response.notFound({ message: "No classrooms found" });
-    }
-
     return response.ok(classrooms);
   }
 
