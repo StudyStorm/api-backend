@@ -63,49 +63,44 @@ export default class Classroom extends BaseModel {
 
   public static getPermissions = scope<typeof Classroom>(
     async (query, user: User) => {
+      query.select("*").withCount("users", (builder) => {
+        builder.where("user_id", user.id).as("is_member");
+      });
       if (user.isSuperAdmin) {
         query
-          .select("*")
           .select(Database.raw("1 as can_write"))
           .select(Database.raw("1 as can_delete"))
+          .select(Database.raw("1 as is_owner"));
+      } else {
+        query
           .withCount("users", (builder) => {
-            builder.where("user_id", user.id).as("is_member");
+            builder
+              .andWhere("user_id", user.id)
+              .andWhere((sub) => {
+                sub
+                  .where("access_right", ClassroomAccessRight.RW)
+                  .orWhere("access_right", ClassroomAccessRight.RWD)
+                  .orWhere("access_right", ClassroomAccessRight.OWNER);
+              })
+              .as("can_write");
+          })
+          .withCount("users", (builder) => {
+            builder
+              .andWhere("user_id", user.id)
+              .andWhere((sub) => {
+                sub
+                  .orWhere("access_right", ClassroomAccessRight.RWD)
+                  .orWhere("access_right", ClassroomAccessRight.OWNER);
+              })
+              .as("can_delete");
+          })
+          .withCount("users", (builder) => {
+            builder
+              .andWhere("user_id", user.id)
+              .andWhere("access_right", ClassroomAccessRight.OWNER)
+              .as("is_owner");
           });
-        return;
       }
-      query
-        .withCount("users", (builder) => {
-          builder
-            .andWhere("user_id", user.id)
-            .andWhere((sub) => {
-              sub
-                .where("access_right", ClassroomAccessRight.RW)
-                .orWhere("access_right", ClassroomAccessRight.RWD)
-                .orWhere("access_right", ClassroomAccessRight.OWNER);
-            })
-            .as("can_write");
-        })
-        .withCount("users", (builder) => {
-          builder
-            .andWhere("user_id", user.id)
-            .andWhere((sub) => {
-              sub
-                .orWhere("access_right", ClassroomAccessRight.RWD)
-                .orWhere("access_right", ClassroomAccessRight.OWNER);
-            })
-            .as("can_delete");
-        })
-        .withCount("users", (builder) => {
-          builder
-            .andWhere("user_id", user.id)
-            .andWhere((sub) => {
-              sub.orWhere("access_right", ClassroomAccessRight.OWNER);
-            })
-            .as("is_owner");
-        })
-        .withCount("users", (builder) => {
-          builder.where("user_id", user.id).as("is_member");
-        });
     }
   );
 
