@@ -42,7 +42,7 @@ export default class Classroom extends BaseModel {
   public static canRead = scope<typeof Classroom>((query, user: User) => {
     if (user.isSuperAdmin) return;
     query
-      .where("visibility", ClassroomVisibility.PUBLIC)
+      .andWhere("visibility", ClassroomVisibility.PUBLIC)
       .orWhereHas("users", (builder) => {
         builder.where("user_id", user.id);
       });
