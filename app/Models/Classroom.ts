@@ -96,6 +96,14 @@ export default class Classroom extends BaseModel {
             .as("can_delete");
         })
         .withCount("users", (builder) => {
+          builder
+            .andWhere("user_id", user.id)
+            .andWhere((sub) => {
+              sub.orWhere("access_right", ClassroomAccessRight.OWNER);
+            })
+            .as("is_owner");
+        })
+        .withCount("users", (builder) => {
           builder.where("user_id", user.id).as("is_member");
         });
     }
@@ -143,6 +151,7 @@ export default class Classroom extends BaseModel {
       permissions: {
         write: +this.$extras.can_write > 0,
         delete: +this.$extras.can_delete > 0,
+        is_owner: +this.$extras.is_owner > 0,
         is_member: +this.$extras.is_member > 0,
       },
       nb_members: +this.$extras.nb_members,
