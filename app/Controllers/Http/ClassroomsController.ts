@@ -18,6 +18,9 @@ export default class ClassroomsController {
       .withScopes((scopes) => scopes.canRead(auth.user))
       .withScopes((scopes) => scopes.getPermissions(auth.user))
       .preload("rootFolder")
+      .withCount("users", (query) => {
+        query.as("nb_members");
+      })
       .paginate(page, limit);
 
     if (classrooms.isEmpty) {

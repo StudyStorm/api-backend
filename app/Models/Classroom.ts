@@ -138,6 +138,7 @@ export default class Classroom extends BaseModel {
         write: +this.$extras.can_write > 0,
         delete: +this.$extras.can_delete > 0,
       },
+      nb_members: +this.$extras.nb_members,
     };
   }
 }
