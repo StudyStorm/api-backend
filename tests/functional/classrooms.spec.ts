@@ -56,9 +56,9 @@ test.group("Classrooms", async (group) => {
       .get("v1/classrooms?page=10&limit=10")
       .loginAs(user);
 
-    response.assertStatus(404);
+    response.assertStatus(200);
     response.assertBodyContains({
-      message: "No classrooms found",
+      data: [],
     });
   });
 
