@@ -57,26 +57,19 @@ export default class DecksController {
     const deck = await Deck.findOrFail(deckId);
     await bouncer.with("DeckPolicy").authorize("write", deck, bouncer);
 
-    const destFolderId = request.body().folderId;
-
-    if (destFolderId && destFolderId !== deck.folderId) {
-      const destFolder = await Folder.findOrFail(destFolderId);
-      await destFolder.load("classroom");
-
-      if (destFolder.classroomId !== deck.folder.classroomId) {
-        return response.forbidden({
-          message: "The destination folder is not in the same classroom",
-        });
-      }
-
-      await bouncer
-        .with("FolderPolicy")
-        .authorize("write", destFolder, bouncer);
-    }
-
     const payload = await request.validate({
       schema: DecksUpdateSchema,
     });
+
+    if (payload.folderId) {
+      await deck.load("folder");
+      const folder = await Folder.findOrFail(payload.folderId);
+      if (folder.classroomId !== deck.folder.classroomId) {
+        return response.forbidden({
+          message: "You can't move a deck to another classroom",
+        });
+      }
+    }
 
     const updatedDeck = await deck.merge(payload).save();
     response.ok(updatedDeck);
