@@ -20,7 +20,7 @@ export default class DecksController {
     const decks = await Deck.query()
       .withScopes((scopes) => scopes.canRead(auth.user))
       .withScopes((scopes) => scopes.withVotes())
-      .where("name", "like", `%${search}%`)
+      .where("name", "ilike", `%${search}%`)
       .preload("creator")
       .if(!!orderByTop, (query) => {
         query.orderBy("votes", "desc");
@@ -42,6 +42,7 @@ export default class DecksController {
       })
       .preload("creator")
       .preload("cards")
+      .orderBy("createdAt")
       .firstOrFail();
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
 
@@ -145,12 +146,15 @@ export default class DecksController {
     auth,
   }: HttpContextContract) {
     const card = await Card.findOrFail(params.id);
+    console.log(card);
 
     const payload = await request.validate({
       schema: schema.create({
         message: schema.string(),
       }),
     });
+
+    console.log(payload);
 
     await card.load("deck");
     await bouncer.with("DeckPolicy").authorize("read", card.deck, bouncer);

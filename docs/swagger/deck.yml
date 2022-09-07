@@ -212,7 +212,7 @@
         description: Forbidden
       404:
         description: Not Found
-/v1/decks/cards/report/{id}:
+/v1/decks/cards/{id}/report:
   post:
     tags:
       - Decks

@@ -13,7 +13,7 @@ export default class ClassroomsController {
     const search = request.input("search", "");
 
     const classrooms = await Classroom.query()
-      .where("name", "like", `%${search}%`)
+      .where("name", "ilike", `%${search}%`)
       .orderBy("name")
       .withScopes((scopes) => scopes.canRead(auth.user))
       .withScopes((scopes) => scopes.getPermissions(auth.user))
@@ -22,10 +22,6 @@ export default class ClassroomsController {
         query.as("nb_members");
       })
       .paginate(page, limit);
-
-    if (classrooms.isEmpty) {
-      return response.notFound({ message: "No classrooms found" });
-    }
 
     return response.ok(classrooms);
   }
