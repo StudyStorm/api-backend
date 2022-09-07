@@ -42,6 +42,7 @@ export default class DecksController {
       })
       .preload("creator")
       .preload("cards")
+      .orderBy("createdAt")
       .firstOrFail();
     await bouncer.with("DeckPolicy").authorize("read", deck, bouncer);
 
