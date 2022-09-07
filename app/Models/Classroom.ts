@@ -74,7 +74,7 @@ export default class Classroom extends BaseModel {
       query
         .withCount("users", (builder) => {
           builder
-            .where("user_id", user.id)
+            .andWhere("user_id", user.id)
             .andWhere((sub) => {
               sub
                 .where("access_right", ClassroomAccessRight.RW)
@@ -85,7 +85,7 @@ export default class Classroom extends BaseModel {
         })
         .withCount("users", (builder) => {
           builder
-            .where("user_id", user.id)
+            .andWhere("user_id", user.id)
             .andWhere((sub) => {
               sub
                 .orWhere("access_right", ClassroomAccessRight.RWD)
