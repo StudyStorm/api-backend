@@ -41,9 +41,12 @@ export default class ClassroomsController {
     const classroom = await Classroom.query()
       .withScopes((scopes) => scopes.getPermissions(auth.user))
       .where("id", params.id)
+      .preload("rootFolder")
+      .withCount("users", (query) => {
+        query.as("nb_members");
+      })
       .firstOrFail();
     await bouncer.with("ClassroomPolicy").authorize("read", classroom);
-    await classroom.load("rootFolder");
     return classroom;
   }
 
