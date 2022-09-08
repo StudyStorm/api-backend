@@ -124,3 +124,12 @@ yarn install --production=false && yarn build && node ace migration:run --force
 # Démarrage du serveur de production
 node build/server.js
 ```
+
+La majorité des providers proposent des champs spécifiques pour lancer ces commandes.
+
+> **Warning**  
+> Le ``.env`` n'étant pas commit, il ne faut pas oublier d'ajouter les bonnes variables durant la configuration.
+
+Précisions sur le déploiement
+
+AdonisJs est déployé comme un serveur NodeJS. Il est alors nécessaire d'utiliser des providers comme AWS, Azure ou Digital Ocean.
