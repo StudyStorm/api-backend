@@ -146,15 +146,12 @@ export default class DecksController {
     auth,
   }: HttpContextContract) {
     const card = await Card.findOrFail(params.id);
-    console.log(card);
 
     const payload = await request.validate({
       schema: schema.create({
         message: schema.string(),
       }),
     });
-
-    console.log(payload);
 
     await card.load("deck");
     await bouncer.with("DeckPolicy").authorize("read", card.deck, bouncer);

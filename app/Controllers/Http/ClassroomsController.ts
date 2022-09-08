@@ -108,7 +108,7 @@ export default class ClassroomsController {
     await classroom.related("users").sync(
       {
         [user.id]: {
-          access_right: ClassroomAccessRight.RW,
+          access_right: payload.accessRight,
         },
       },
       false
