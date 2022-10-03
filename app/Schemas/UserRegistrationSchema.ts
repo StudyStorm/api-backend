@@ -6,8 +6,8 @@ export default schema.create({
     rules.unique({ table: "users", column: "email" }),
   ]),
   profilePicture: schema.file.optional({
-    size: "2mb",
-    extnames: ["jpg", "png", "gif"],
+    size: "10mb",
+    extnames: ["jpg", "png", "gif", "jpeg", "webp", "svg", "bmp"],
   }),
   password: schema.string([rules.minLength(6)]),
   firstName: schema.string({ trim: true }, [rules.capitalize()]),
