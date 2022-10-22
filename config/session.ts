@@ -87,7 +87,7 @@ export default sessionConfig({
   cookie: {
     path: "/",
     httpOnly: true,
-    sameSite: false,
+    sameSite: true,
     domain: Env.get("CLIENT_DOMAIN"),
   },
 
